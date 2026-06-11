@@ -1,14 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getAllProducts } from "@/lib/products";
+import ProductCard from "@/components/ProductCard";
 
-const newProducts = [
-  { id: 101, name: "The Midnight Trench", category: "Outerwear", price: 650, image: "/hero.png", tag: "Limited Run" },
-  { id: 102, name: "Raw Silk Camisole", category: "Womenswear", price: 185, image: "/women.png", tag: "Selling Fast" },
-  { id: 103, name: "Structured Linen Blazer", category: "Menswear", price: 420, image: "/men.png", tag: "Just Added" },
-  { id: 104, name: "Woven Leather Satchel", category: "Accessories", price: 295, image: "/accessories.png", tag: "Editor's Pick" },
-];
+export default async function NewArrivals() {
+  const allProducts = await getAllProducts();
+  const newProducts = allProducts.filter(p => p.tag).slice(0, 4);
 
-export default function NewArrivals() {
   return (
     <div className="flex flex-col w-full bg-cream text-espresso min-h-screen">
       
@@ -50,7 +48,7 @@ export default function NewArrivals() {
               <span className="text-sm uppercase tracking-widest text-espresso/50 font-bold">Low Stock</span>
             </div>
             <Link 
-              href="/product/100" 
+              href="/product/organic-cotton-overcoat" 
               className="inline-block px-12 py-5 bg-espresso text-cream text-sm uppercase tracking-widest font-bold hover:bg-espresso/90 transition-colors text-center w-full sm:w-auto shadow-xl"
             >
               Pre-Order Now
@@ -71,35 +69,7 @@ export default function NewArrivals() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-16">
             {newProducts.map((product) => (
-              <div key={product.id} className="group flex flex-col relative">
-                {/* High-conversion Tag */}
-                <div className="absolute top-4 left-4 z-10 bg-cream/90 backdrop-blur-sm text-espresso text-[9px] uppercase tracking-widest font-bold px-3 py-1.5 shadow-sm">
-                  {product.tag}
-                </div>
-                
-                <Link href={`/product/${product.id}`} className="relative aspect-[3/4] overflow-hidden mb-6 bg-cream">
-                  <Image 
-                    src={product.image} 
-                    alt={product.name} 
-                    fill 
-                    className="object-cover group-hover:scale-105 transition-transform duration-[1.5s] ease-out" 
-                  />
-                  {/* Quick Add CTA */}
-                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
-                    <button className="px-8 py-3 bg-olive text-cream text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-[#4A532B] transition-colors translate-y-4 group-hover:translate-y-0 duration-500 shadow-xl w-3/4">
-                      Add to Bag
-                    </button>
-                  </div>
-                </Link>
-                
-                <div className="flex flex-col text-center">
-                  <span className="text-[9px] uppercase tracking-[0.2em] text-espresso/50 mb-2 font-bold">{product.category}</span>
-                  <Link href={`/product/${product.id}`} className="text-lg font-serif mb-2 hover:text-olive transition-colors text-espresso font-medium">
-                    {product.name}
-                  </Link>
-                  <span className="font-semibold text-espresso/90">${product.price}</span>
-                </div>
-              </div>
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
         </div>

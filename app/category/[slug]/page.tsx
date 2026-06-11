@@ -1,18 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
-// Mock Product Data
-const allProducts = [
-  { id: 1, name: "Silk Blend Slip Dress", category: "women", price: 245, image: "/women.png" },
-  { id: 2, name: "Tailored Linen Blazer", category: "men", price: 320, image: "/men.png" },
-  { id: 3, name: "Woven Leather Tote", category: "accessories", price: 185, image: "/accessories.png" },
-  { id: 4, name: "Organic Cotton Overcoat", category: "unisex", price: 450, image: "/hero.png" },
-  { id: 5, name: "Cashmere Turtleneck", category: "women", price: 210, image: "/women.png" },
-  { id: 6, name: "Pleated Wool Trousers", category: "men", price: 190, image: "/men.png" },
-  { id: 7, name: "Suede Ankle Boots", category: "accessories", price: 290, image: "/accessories.png" },
-  { id: 8, name: "Ribbed Knit Sweater", category: "men", price: 175, image: "/hero.png" },
-];
+import { getAllProducts } from "@/lib/products";
+import ProductCard from "@/components/ProductCard";
 
 const categoryMeta: Record<string, { title: string, description: string, coverImage: string }> = {
   women: { 
@@ -40,7 +30,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     notFound();
   }
 
-  // Filter products for this category (and include unisex items for apparel)
+  // Fetch all products and filter for this category (and include unisex items for apparel)
+  const allProducts = await getAllProducts();
   const categoryProducts = allProducts.filter(
     p => p.category === slug.toLowerCase() || (slug !== 'accessories' && p.category === 'unisex')
   );
@@ -111,27 +102,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-16">
           {categoryProducts.map((product) => (
-            <div key={product.id} className="group flex flex-col">
-              <Link href={`/product/${product.id}`} className="relative aspect-[3/4] overflow-hidden mb-5 bg-espresso/5">
-                <Image 
-                  src={product.image} 
-                  alt={product.name} 
-                  fill 
-                  className="object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out" 
-                />
-                <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
-                  <button className="px-8 py-3 bg-olive text-cream text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-[#4A532B] transition-colors translate-y-4 group-hover:translate-y-0 duration-500 shadow-xl">
-                    Add to Bag
-                  </button>
-                </div>
-              </Link>
-              <div className="flex flex-col text-center">
-                <Link href={`/product/${product.id}`} className="text-lg font-serif mb-2 hover:text-olive transition-colors text-espresso">
-                  {product.name}
-                </Link>
-                <span className="font-medium text-espresso/80 tracking-wide">${product.price}</span>
-              </div>
-            </div>
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
         

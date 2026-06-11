@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { cloths } from "@/data/cloths";
 
 const looks = [
   {
@@ -7,32 +8,21 @@ const looks = [
     title: "The Autumn Transition",
     description: "A masterclass in layering. Blending organic textures with sharp, structured outerwear for an effortlessly sophisticated silhouette.",
     image: "/hero.png",
-    products: [
-      { id: 101, name: "Organic Cotton Overcoat", price: 450, image: "/hero.png" },
-      { id: 105, name: "Ribbed Cashmere Turtleneck", price: 180, image: "/heritage.png" },
-      { id: 108, name: "Leather Chelsea Boots", price: 310, image: "/accessories.png" },
-    ]
+    products: [cloths[3], cloths[4], cloths[6]]
   },
   {
     id: "02",
     title: "Modern Minimalism",
     description: "Stripping back to the absolute essentials. A study in proportion featuring our signature tailored separates and a perfectly draped silk top.",
     image: "/women.png",
-    products: [
-      { id: 102, name: "Raw Silk Camisole", price: 185, image: "/women.png" },
-      { id: 106, name: "Wide-Leg Wool Trousers", price: 220, image: "/heritage.png" },
-    ]
+    products: [cloths[18], cloths[0]]
   },
   {
     id: "03",
     title: "The Urban Uniform",
     description: "Redefining the daily standard. Uncompromising tailoring meets performance fabrics to create the ultimate modern uniform for the city.",
     image: "/men.png",
-    products: [
-      { id: 103, name: "Structured Linen Blazer", price: 420, image: "/men.png" },
-      { id: 107, name: "Classic Cotton Tee", price: 65, image: "/hero.png" },
-      { id: 109, name: "Woven Weekender Bag", price: 450, image: "/accessories.png" },
-    ]
+    products: [cloths[1], cloths[12], cloths[2]]
   }
 ];
 

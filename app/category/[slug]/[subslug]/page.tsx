@@ -12,24 +12,13 @@ import { notFound } from "next/navigation";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
-// Mock Fallback Data (Used until Firestore is configured)
-const mockSubcategoryProducts = [
-  { id: "w-form-1", name: "Structured Linen Suit", category: "women", subCategory: "formal", price: 550, image: "/women.png" },
-  { id: "w-part-1", name: "Silk Evening Gown", category: "women", subCategory: "partywear", price: 890, image: "/heritage.png" },
-  { id: "w-loung-1", name: "Cashmere Lounge Set", category: "women", subCategory: "loungewear", price: 320, image: "/hero.png" },
-  { id: "w-cas-1", name: "Oversized Cotton Button-Down", category: "women", subCategory: "casual", price: 145, image: "/women.png" },
-  { id: "m-cas-1", name: "Heavyweight Jersey Tee", category: "men", subCategory: "casual", price: 85, image: "/men.png" },
-  { id: "m-form-1", name: "Double-Breasted Wool Blazer", category: "men", subCategory: "formal", price: 620, image: "/hero.png" },
-  { id: "a-bags-1", name: "Woven Leather Tote", category: "accessories", subCategory: "bags", price: 350, image: "/accessories.png" },
-  { id: "a-eye-1", name: "Acetate Sunglasses", category: "accessories", subCategory: "eyewear", price: 185, image: "/accessories.png" },
-  { id: "a-jewel-1", name: "Gold Chain Necklace", category: "accessories", subCategory: "jewelry", price: 210, image: "/women.png" },
-  { id: "a-acc-1", name: "Silk Scarf", category: "accessories", subCategory: "accents", price: 95, image: "/hero.png" },
-];
+import { getAllProducts } from "@/lib/products";
+import ProductCard from "@/components/ProductCard";
 
 export default async function SubCategoryPage({ params }: { params: Promise<{ slug: string, subslug: string }> }) {
   const { slug, subslug } = await params;
   
-  let products = [];
+  let products: any[] = [];
   
   // ==========================================
   // CLOUD FIRESTORE FILTERING IMPLEMENTATION
@@ -61,9 +50,10 @@ export default async function SubCategoryPage({ params }: { params: Promise<{ sl
     console.error("Error fetching from Firestore:", error);
   }
 
-  // Fallback to mock data for development demonstration if Firestore isn't connected
+  // Fallback to data from backend helper if Firestore isn't connected
   if (products.length === 0) {
-    products = mockSubcategoryProducts.filter(
+    const allProducts = await getAllProducts();
+    products = allProducts.filter(
       p => p.category === slug.toLowerCase() && p.subCategory === subslug.toLowerCase()
     );
   }
@@ -121,27 +111,7 @@ export default async function SubCategoryPage({ params }: { params: Promise<{ sl
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
           {products.map((product) => (
-            <div key={product.id} className="group flex flex-col">
-              <Link href={`/product/${product.id}`} className="relative aspect-[3/4] overflow-hidden mb-5 bg-espresso/5">
-                <Image 
-                  src={product.image} 
-                  alt={product.name} 
-                  fill 
-                  className="object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out" 
-                />
-                <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
-                  <button className="px-8 py-3 bg-olive text-cream text-[10px] uppercase tracking-[0.2em] font-bold hover:bg-[#4A532B] transition-colors translate-y-4 group-hover:translate-y-0 duration-500 shadow-xl">
-                    Add to Bag
-                  </button>
-                </div>
-              </Link>
-              <div className="flex flex-col text-center">
-                <Link href={`/product/${product.id}`} className="text-lg font-serif mb-2 hover:text-olive transition-colors text-espresso">
-                  {product.name}
-                </Link>
-                <span className="font-medium text-espresso/80 tracking-wide">${product.price}</span>
-              </div>
-            </div>
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
         
