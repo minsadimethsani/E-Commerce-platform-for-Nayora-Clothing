@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
+import ProductActions from "@/components/ProductActions";
 import { getProductById, getProductsByCategory } from "@/lib/products";
 
 export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -82,30 +83,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
               </div>
             )}
 
-            {/* Size Selection */}
-            <div className="mb-12">
-              <div className="flex justify-between items-end mb-4">
-                <span className="text-xs uppercase tracking-widest font-bold">Size</span>
-                <button className="text-[10px] uppercase tracking-widest font-bold text-espresso/50 hover:text-espresso underline underline-offset-4">Size Guide</button>
-              </div>
-              <div className="grid grid-cols-5 gap-3">
-                {['XS', 'S', 'M', 'L', 'XL'].map((size) => (
-                  <button key={size} className="py-3 border border-espresso/20 hover:border-espresso hover:bg-espresso/5 transition-all text-sm font-medium">
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-col gap-4 mb-16">
-              <button className="w-full py-5 bg-espresso text-cream text-sm uppercase tracking-widest font-bold hover:bg-espresso/90 transition-colors shadow-xl">
-                Add to Bag
-              </button>
-              <button className="w-full py-5 border border-espresso/20 text-espresso text-sm uppercase tracking-widest font-bold hover:bg-espresso/5 transition-colors">
-                Add to Wishlist
-              </button>
-            </div>
+            {/* Size & Actions (Client Component for Interactivity) */}
+            <ProductActions product={product} />
 
             {/* Details Accordion */}
             <div className="border-t border-espresso/20 pt-6 space-y-6">

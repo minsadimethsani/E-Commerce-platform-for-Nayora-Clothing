@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import ProductCard from "@/components/ProductCard";
+import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 import { Product } from "@/data/cloths";
 
 const categories = ["All", "Women", "Men", "Accessories", "Unisex"];
@@ -145,8 +146,10 @@ function CollectionsContent() {
 
           {/* Loading State */}
           {isLoading ? (
-            <div className="w-full flex justify-center items-center py-32">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-espresso"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))}
             </div>
           ) : (
             <>

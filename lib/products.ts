@@ -29,7 +29,7 @@ export interface GetProductsOptions {
 
 export async function getPaginatedProducts(options: GetProductsOptions) {
   await simulateDelay();
-  
+
   let result = [...cloths];
 
   // 1. Filter by category
@@ -40,8 +40,8 @@ export async function getPaginatedProducts(options: GetProductsOptions) {
   // 2. Search query
   if (options.query) {
     const q = options.query.toLowerCase();
-    result = result.filter(p => 
-      p.name.toLowerCase().includes(q) || 
+    result = result.filter(p =>
+      p.name.toLowerCase().includes(q) ||
       p.category.toLowerCase().includes(q)
     );
   }
@@ -68,9 +68,9 @@ export async function getPaginatedProducts(options: GetProductsOptions) {
   const limit = options.limit || 9;
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
-  
+
   const paginatedResult = result.slice(startIndex, endIndex);
-  
+
   return {
     products: paginatedResult,
     total: result.length,
