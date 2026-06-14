@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { Product } from "@/data/cloths";
+import { useCart } from "@/context/CartContext";
+import { useRouter } from "next/navigation";
 
 interface ProductActionsProps {
   product: Product;
@@ -10,23 +12,41 @@ interface ProductActionsProps {
 export default function ProductActions({ product }: ProductActionsProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   
   // Form State
-  const [formData, setFormData] = useState({ name: "", email: "", address: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", address: "", quantity: 1 });
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<{name?: string, email?: string, address?: string}>({});
+
+  const { addToCart, setPendingCheckout } = useCart();
+  const router = useRouter();
 
   const handleBuyNowClick = () => {
     if (!selectedSize) {
       setError("Please select a size before proceeding.");
-      // Auto-clear the error after 3 seconds
       setTimeout(() => setError(null), 3000);
       return;
     }
     setError(null);
     setIsModalOpen(true);
+  };
+
+  const handleAddToCartClick = () => {
+    if (!selectedSize) {
+      setError("Please select a size before adding to cart.");
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+    setError(null);
+    addToCart(product, selectedSize, 1);
+    
+    // Optional visual feedback
+    const btn = document.getElementById("add-to-cart-btn");
+    if (btn) {
+      const originalText = btn.innerText;
+      btn.innerText = "Added!";
+      setTimeout(() => { btn.innerText = originalText; }, 2000);
+    }
   };
 
   const validateForm = () => {
@@ -47,48 +67,30 @@ export default function ProductActions({ product }: ProductActionsProps) {
     e.preventDefault();
     if (!validateForm()) return;
 
-    setIsLoading(true);
-    setError(null);
-    setSuccess(null);
+    // Set pending checkout in Context and redirect to payment
+    setPendingCheckout({
+      items: [
+        {
+          product,
+          size: selectedSize!,
+          quantity: formData.quantity
+        }
+      ],
+      shippingDetails: {
+        name: formData.name,
+        email: formData.email,
+        address: formData.address,
+      },
+      totalAmount: product.price * formData.quantity
+    });
 
-    try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId: product.id,
-          size: selectedSize,
-          ...formData
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Checkout failed");
-      }
-
-      setSuccess(`Order Confirmed! Your Order ID is ${data.orderId}`);
-      // Clear form on success
-      setFormData({ name: "", email: "", address: "" });
-      
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
+    router.push("/checkout/payment-method");
   };
 
   const handleCloseModal = () => {
-    if (!isLoading && !success) {
-      setIsModalOpen(false);
-      setError(null);
-      setFormErrors({});
-    } else if (success) {
-      setIsModalOpen(false);
-      setSuccess(null);
-      setSelectedSize(null);
-    }
+    setIsModalOpen(false);
+    setError(null);
+    setFormErrors({});
   };
 
   return (
@@ -123,10 +125,8 @@ export default function ProductActions({ product }: ProductActionsProps) {
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-4 mb-16">
         <button 
-          onClick={() => {
-            if(!selectedSize) setError("Please select a size.");
-            else alert("Added to cart! (Mock)");
-          }}
+          id="add-to-cart-btn"
+          onClick={handleAddToCartClick}
           className="w-full sm:w-1/2 py-5 border border-espresso text-espresso text-sm uppercase tracking-widest font-bold hover:bg-espresso/5 transition-colors"
         >
           Add to Cart
@@ -144,100 +144,79 @@ export default function ProductActions({ product }: ProductActionsProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-espresso/40 backdrop-blur-sm">
           <div className="bg-cream w-full max-w-lg p-8 shadow-2xl relative animate-[fadeIn_0.3s_ease-out]">
             {/* Close Button */}
-            {(!isLoading) && (
-              <button 
-                onClick={handleCloseModal}
-                className="absolute top-6 right-6 text-espresso/50 hover:text-espresso text-xl font-bold"
-              >
-                &times;
-              </button>
-            )}
+            <button 
+              onClick={handleCloseModal}
+              className="absolute top-6 right-6 text-espresso/50 hover:text-espresso text-xl font-bold"
+            >
+              &times;
+            </button>
 
-            {success ? (
-              <div className="text-center py-10">
-                <div className="w-16 h-16 bg-olive/20 text-olive rounded-full flex items-center justify-center mx-auto mb-6">
-                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+            <h3 className="text-2xl font-serif text-espresso mb-2">Buy Now Details</h3>
+            <p className="text-espresso/60 text-sm mb-8">
+              Proceeding with <strong>{product.name}</strong> (Size: {selectedSize})
+            </p>
+
+            <form onSubmit={handleCheckoutSubmit} className="space-y-5">
+              
+              <div className="flex gap-4">
+                <div className="w-1/3">
+                  <label className="block text-xs uppercase tracking-widest font-bold text-espresso mb-2">Quantity</label>
+                  <input 
+                    type="number" 
+                    min="1"
+                    value={formData.quantity}
+                    onChange={(e) => setFormData({...formData, quantity: parseInt(e.target.value) || 1})}
+                    className="w-full border border-espresso/20 bg-transparent px-4 py-3 text-sm outline-none focus:border-espresso transition-colors"
+                  />
                 </div>
-                <h3 className="text-3xl font-serif text-espresso mb-4">Thank You!</h3>
-                <p className="text-espresso/70 mb-8">{success}</p>
+                <div className="w-2/3">
+                  <label className="block text-xs uppercase tracking-widest font-bold text-espresso mb-2">Full Name</label>
+                  <input 
+                    type="text" 
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className={`w-full border ${formErrors.name ? 'border-red-500' : 'border-espresso/20'} bg-transparent px-4 py-3 text-sm outline-none focus:border-espresso transition-colors`}
+                  />
+                  {formErrors.name && <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-widest font-bold text-espresso mb-2">Email Address</label>
+                <input 
+                  type="email" 
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  className={`w-full border ${formErrors.email ? 'border-red-500' : 'border-espresso/20'} bg-transparent px-4 py-3 text-sm outline-none focus:border-espresso transition-colors`}
+                />
+                {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-widest font-bold text-espresso mb-2">Shipping Address</label>
+                <textarea 
+                  rows={3}
+                  value={formData.address}
+                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  className={`w-full border ${formErrors.address ? 'border-red-500' : 'border-espresso/20'} bg-transparent px-4 py-3 text-sm outline-none focus:border-espresso transition-colors resize-none`}
+                ></textarea>
+                {formErrors.address && <p className="text-red-500 text-xs mt-1">{formErrors.address}</p>}
+              </div>
+
+              <div className="pt-4 border-t border-espresso/10 mt-6">
+                <div className="flex justify-between text-espresso font-bold text-lg mb-6">
+                  <span>Total:</span>
+                  <span>${product.price * formData.quantity}</span>
+                </div>
+
                 <button 
-                  onClick={handleCloseModal}
-                  className="px-8 py-4 bg-espresso text-cream text-sm uppercase tracking-widest font-bold hover:bg-espresso/90 transition-colors"
+                  type="submit"
+                  className="w-full py-5 bg-espresso text-cream text-sm uppercase tracking-widest font-bold hover:bg-espresso/90 transition-colors shadow-xl flex items-center justify-center gap-3"
                 >
-                  Continue Shopping
+                  Proceed to Payment
                 </button>
               </div>
-            ) : (
-              <>
-                <h3 className="text-2xl font-serif text-espresso mb-2">Secure Checkout</h3>
-                <p className="text-espresso/60 text-sm mb-8">
-                  Completing purchase for <strong>{product.name}</strong> (Size: {selectedSize})
-                </p>
-
-                {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 text-sm mb-6">
-                    {error}
-                  </div>
-                )}
-
-                <form onSubmit={handleCheckoutSubmit} className="space-y-5">
-                  <div>
-                    <label className="block text-xs uppercase tracking-widest font-bold text-espresso mb-2">Full Name</label>
-                    <input 
-                      type="text" 
-                      value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      className={`w-full border ${formErrors.name ? 'border-red-500' : 'border-espresso/20'} bg-transparent px-4 py-3 text-sm outline-none focus:border-espresso transition-colors`}
-                    />
-                    {formErrors.name && <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs uppercase tracking-widest font-bold text-espresso mb-2">Email Address</label>
-                    <input 
-                      type="email" 
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className={`w-full border ${formErrors.email ? 'border-red-500' : 'border-espresso/20'} bg-transparent px-4 py-3 text-sm outline-none focus:border-espresso transition-colors`}
-                    />
-                    {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs uppercase tracking-widest font-bold text-espresso mb-2">Shipping Address</label>
-                    <textarea 
-                      rows={3}
-                      value={formData.address}
-                      onChange={(e) => setFormData({...formData, address: e.target.value})}
-                      className={`w-full border ${formErrors.address ? 'border-red-500' : 'border-espresso/20'} bg-transparent px-4 py-3 text-sm outline-none focus:border-espresso transition-colors resize-none`}
-                    ></textarea>
-                    {formErrors.address && <p className="text-red-500 text-xs mt-1">{formErrors.address}</p>}
-                  </div>
-
-                  <div className="pt-4 border-t border-espresso/10 mt-6">
-                    <div className="flex justify-between text-espresso font-bold text-lg mb-6">
-                      <span>Total:</span>
-                      <span>${product.price}</span>
-                    </div>
-
-                    <button 
-                      type="submit"
-                      disabled={isLoading}
-                      className="w-full py-5 bg-espresso text-cream text-sm uppercase tracking-widest font-bold hover:bg-espresso/90 transition-colors shadow-xl disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-                    >
-                      {isLoading ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-cream/30 border-t-cream rounded-full animate-spin"></div>
-                          Processing...
-                        </>
-                      ) : (
-                        `Pay $${product.price}`
-                      )}
-                    </button>
-                  </div>
-                </form>
-              </>
-            )}
+            </form>
           </div>
         </div>
       )}

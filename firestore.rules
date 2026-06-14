@@ -6,6 +6,11 @@ service cloud.firestore {
       allow write: if false;
     }
     
+    match /orders/{orderId} {
+      allow create: if true; // Allow guest checkout submissions
+      allow read, update, delete: if false;
+    }
+    
     match /{document=**} {
       allow read, write: if false;
     }

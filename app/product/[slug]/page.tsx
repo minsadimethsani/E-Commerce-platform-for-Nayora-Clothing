@@ -32,8 +32,8 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <div className="flex flex-col gap-4">
             <div className="relative aspect-[3/4] w-full overflow-hidden bg-espresso/5">
               <Image 
-                src={product.image} 
-                alt={product.name} 
+                src={product.image || "/hero.png"} 
+                alt={product.name || "Product"} 
                 fill 
                 className="object-cover"
                 priority
@@ -48,7 +48,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
             <div className="grid grid-cols-4 gap-4">
               {[1, 2, 3, 4].map((thumb) => (
                 <div key={thumb} className="relative aspect-[3/4] overflow-hidden bg-espresso/5 cursor-pointer opacity-70 hover:opacity-100 transition-opacity">
-                  <Image src={product.image} alt={`${product.name} thumbnail ${thumb}`} fill className="object-cover" />
+                  <Image src={product.image || "/hero.png"} alt={`${product.name} thumbnail ${thumb}`} fill className="object-cover" />
                 </div>
               ))}
             </div>

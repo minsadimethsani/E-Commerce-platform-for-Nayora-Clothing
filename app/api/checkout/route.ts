@@ -1,20 +1,28 @@
 import { NextResponse } from 'next/server';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     
-    // Basic validation
-    const { productId, size, name, email, address } = body;
+    const { items, shippingDetails, paymentMethod } = body;
     
-    if (!productId || !size || !name || !email || !address) {
+    if (!items || !items.length || !shippingDetails || !paymentMethod) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required order fields' },
         { status: 400 }
       );
     }
 
-    // Email validation
+    const { name, email, address } = shippingDetails;
+    if (!name || !email || !address) {
+      return NextResponse.json(
+        { error: 'Missing shipping details' },
+        { status: 400 }
+      );
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
@@ -23,21 +31,59 @@ export async function POST(request: Request) {
       );
     }
 
-    // Simulate payment processing / backend saving delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Process all items and validate price
+    let totalAmount = 0;
+    const orderItems = [];
 
-    // Simulate random failure (1 in 10 chance) to demonstrate error handling
-    if (Math.random() < 0.1) {
-      return NextResponse.json(
-        { error: 'Payment declined by the gateway. Please try again.' },
-        { status: 402 } // 402 Payment Required
-      );
+    for (const item of items) {
+      const productId = String(item.product.id);
+      const productRef = doc(db, "products", productId);
+      const productSnap = await getDoc(productRef);
+      
+      if (!productSnap.exists()) {
+        return NextResponse.json(
+          { error: `Product ${item.product.name} not found` },
+          { status: 404 }
+        );
+      }
+      
+      const productData = productSnap.data();
+      const realPrice = productData.price;
+      const quantity = item.quantity || 1;
+
+      totalAmount += realPrice * quantity;
+      
+      orderItems.push({
+        productId: item.product.id,
+        name: productData.name,
+        size: item.size,
+        quantity: quantity,
+        priceAtPurchase: realPrice
+      });
     }
 
-    // Success response
+    // Save order to Firestore
+    const orderData = {
+      userId: "guest",
+      status: "processing",
+      paymentMethod, // 'Card', 'Bank Deposit', 'Cash on Delivery'
+      totalAmount,
+      items: orderItems,
+      shippingDetails: {
+        name,
+        email,
+        address,
+        carrier: "Pending",
+        trackingNumber: ""
+      },
+      createdAt: serverTimestamp()
+    };
+
+    const docRef = await addDoc(collection(db, "orders"), orderData);
+
     return NextResponse.json({
       success: true,
-      orderId: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
+      orderId: docRef.id,
       message: 'Order processed successfully!'
     });
 

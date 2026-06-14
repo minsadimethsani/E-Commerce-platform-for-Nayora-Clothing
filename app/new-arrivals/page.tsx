@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getAllProducts } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
+import PreOrderButton from "@/components/PreOrderButton";
 
 export default async function NewArrivals() {
   const allProducts = await getAllProducts();
@@ -47,12 +48,7 @@ export default async function NewArrivals() {
               <span className="text-2xl font-medium">$850</span>
               <span className="text-sm uppercase tracking-widest text-espresso/50 font-bold">Low Stock</span>
             </div>
-            <Link 
-              href="/product/organic-cotton-overcoat" 
-              className="inline-block px-12 py-5 bg-espresso text-cream text-sm uppercase tracking-widest font-bold hover:bg-espresso/90 transition-colors text-center w-full sm:w-auto shadow-xl"
-            >
-              Pre-Order Now
-            </Link>
+            <PreOrderButton />
           </div>
         </div>
       </section>

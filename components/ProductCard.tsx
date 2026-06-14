@@ -12,8 +12,8 @@ export default function ProductCard({ product }: { product: Product }) {
       )}
       <Link href={`/product/${product.id}`} className="relative aspect-[3/4] overflow-hidden mb-5 bg-espresso/5">
         <Image 
-          src={product.image} 
-          alt={product.name} 
+          src={product.image || "/hero.png"} 
+          alt={product.name || "Product image"} 
           fill 
           className="object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out" 
         />

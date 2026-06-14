@@ -1,32 +1,43 @@
 import Image from "next/image";
 import Link from "next/link";
-import { cloths } from "@/data/cloths";
+import { getProductById } from "@/lib/products";
 
-const looks = [
+const looksData = [
   {
     id: "01",
     title: "The Autumn Transition",
     description: "A masterclass in layering. Blending organic textures with sharp, structured outerwear for an effortlessly sophisticated silhouette.",
     image: "/hero.png",
-    products: [cloths[3], cloths[4], cloths[6]]
+    productIds: ["organic-cotton-overcoat", "cashmere-turtleneck", "suede-ankle-boots"]
   },
   {
     id: "02",
     title: "Modern Minimalism",
     description: "Stripping back to the absolute essentials. A study in proportion featuring our signature tailored separates and a perfectly draped silk top.",
     image: "/women.png",
-    products: [cloths[18], cloths[0]]
+    productIds: ["raw-silk-camisole", "silk-blend-slip-dress"]
   },
   {
     id: "03",
     title: "The Urban Uniform",
     description: "Redefining the daily standard. Uncompromising tailoring meets performance fabrics to create the ultimate modern uniform for the city.",
     image: "/men.png",
-    products: [cloths[1], cloths[12], cloths[2]]
+    productIds: ["tailored-linen-blazer", "heavyweight-jersey-tee", "woven-leather-tote"]
   }
 ];
 
-export default function LookbookPage() {
+export default async function LookbookPage() {
+  // Fetch all the product details dynamically
+  const looks = await Promise.all(
+    looksData.map(async (look) => {
+      const products = await Promise.all(
+        look.productIds.map(id => getProductById(id))
+      );
+      // Filter out any undefined products just in case
+      return { ...look, products: products.filter(Boolean) as any[] };
+    })
+  );
+
   return (
     <div className="flex flex-col w-full bg-cream text-espresso min-h-screen">
       
@@ -84,8 +95,8 @@ export default function LookbookPage() {
                     <Link key={product.id} href={`/product/${product.id}`} className="group flex flex-col">
                       <div className="relative aspect-[3/4] overflow-hidden mb-4 bg-cream">
                         <Image 
-                          src={product.image} 
-                          alt={product.name} 
+                          src={product.image || "/hero.png"} 
+                          alt={product.name || "Product"} 
                           fill 
                           className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out" 
                         />

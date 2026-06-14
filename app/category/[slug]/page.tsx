@@ -3,32 +3,21 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllProducts } from "@/lib/products";
 import ProductCard from "@/components/ProductCard";
-
-const categoryMeta: Record<string, { title: string, description: string, coverImage: string }> = {
-  women: { 
-    title: "Womenswear", 
-    description: "Feminine silhouettes defined by impeccable tailoring and fluid drape. Designed for the modern minimalist.", 
-    coverImage: "/women.png" 
-  },
-  men: { 
-    title: "Menswear", 
-    description: "The modern uniform. Uncompromising structure meets everyday utility and comfort.", 
-    coverImage: "/men.png" 
-  },
-  accessories: { 
-    title: "Accessories", 
-    description: "The final touch. Exceptional leather goods and elevated essentials crafted by European artisans.", 
-    coverImage: "/accessories.png" 
-  }
-};
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const meta = categoryMeta[slug.toLowerCase()];
+  
+  // Fetch category metadata from Firestore
+  const categoryDocRef = doc(db, "categories", slug.toLowerCase());
+  const categorySnap = await getDoc(categoryDocRef);
 
-  if (!meta) {
+  if (!categorySnap.exists() || !categorySnap.data().isActive) {
     notFound();
   }
+
+  const meta = categorySnap.data();
 
   // Fetch all products and filter for this category (and include unisex items for apparel)
   const allProducts = await getAllProducts();
@@ -42,7 +31,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       {/* Category Hero Section */}
       <section className="relative w-full h-[60vh] flex items-center justify-center overflow-hidden bg-espresso">
         <Image 
-          src={meta.coverImage} 
+          src={meta.heroImage} 
           alt={meta.title} 
           fill 
           className="object-cover object-center opacity-70"
