@@ -36,7 +36,7 @@ export default function ProductsTable({ products }: { products: AdminProduct[] }
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-neutral-200">
-            {products.map((product) => (
+            {products.map((product: AdminProduct) => (
               <tr key={product.id} className={`transition-colors hover:bg-neutral-50 ${isPending ? 'opacity-70' : ''}`}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
