@@ -11,6 +11,7 @@ export async function createProductAction(prevState: any, formData: FormData) {
   const price = Number(formData.get("price"));
   const quantity = Number(formData.get("quantity"));
   const image = formData.get("image") as string;
+  const imagesRaw = formData.get("images") as string;
   const color = formData.get("color") as string;
   const tag = formData.get("tag") as string;
 
@@ -30,7 +31,17 @@ export async function createProductAction(prevState: any, formData: FormData) {
     errors.quantity = "Quantity must be a valid positive number.";
   }
   if (!image || image.trim().length === 0) {
-    errors.image = "Image URL is required.";
+    errors.image = "Image is required.";
+  }
+
+  // Parse images if available
+  let images: string[] = [];
+  if (imagesRaw) {
+    try {
+      images = JSON.parse(imagesRaw);
+    } catch (e) {
+      console.error("Failed to parse images array", e);
+    }
   }
 
   // If there are validation errors, return them
@@ -47,11 +58,12 @@ export async function createProductAction(prevState: any, formData: FormData) {
       price,
       quantity,
       image: image.trim(),
+      ...(images.length > 0 && { images }),
       ...(color && { color: color.trim() }),
       ...(tag && { tag: tag.trim() }),
     });
 
-    revalidatePath("/admin/products");
+    revalidatePath("/", "layout");
     return { success: true, message: "Product added successfully!" };
   } catch (error) {
     return { success: false, message: "Failed to add product due to a server error." };
@@ -60,5 +72,5 @@ export async function createProductAction(prevState: any, formData: FormData) {
 
 export async function deleteProductAction(id: string | number) {
   await removeProduct(id);
-  revalidatePath("/admin/products");
+  revalidatePath("/", "layout");
 }

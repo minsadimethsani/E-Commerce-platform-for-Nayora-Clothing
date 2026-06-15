@@ -66,30 +66,32 @@ export default async function SubCategoryPage({ params }: { params: Promise<{ sl
     <div className="flex flex-col w-full bg-cream text-espresso min-h-screen">
       
       {/* Sub-Category Hero Section */}
-      <section className="relative w-full h-[50vh] flex items-center justify-center overflow-hidden bg-espresso">
-        <Image 
-          src={products.length > 0 ? products[0].image : "/hero.png"} 
-          alt={`${displayCategory} ${displaySubCategory}`} 
-          fill 
-          className="object-cover object-center opacity-60"
-          priority
-        />
-        <div className="absolute inset-0 bg-espresso/50 z-10 pointer-events-none"></div>
-        
-        <div className="relative z-20 text-center px-6 flex flex-col items-center w-full max-w-3xl mx-auto">
-          {/* Breadcrumb Navigation */}
-          <div className="flex items-center gap-3 text-cream/80 uppercase tracking-[0.3em] text-xs font-bold mb-6 drop-shadow-md">
-            <Link href={`/category/${slug}`} className="hover:text-olive transition-colors">{displayCategory}</Link>
-            <span className="opacity-50">/</span>
-            <span className="text-olive">{displaySubCategory}</span>
-          </div>
+      <section className="relative w-full pt-6 md:pt-16 pb-8 bg-cream px-4 md:px-8">
+        <div className="w-full max-w-7xl h-[40vh] md:h-[50vh] mx-auto relative overflow-hidden rounded-2xl md:rounded-[2rem] shadow-xl flex items-center justify-center bg-espresso">
+          <Image 
+            src={products.length > 0 ? products[0].image : "/hero.png"} 
+            alt={`${displayCategory} ${displaySubCategory}`} 
+            fill 
+            className="object-cover object-center opacity-60"
+            priority
+          />
+          <div className="absolute inset-0 bg-espresso/50 z-10 pointer-events-none"></div>
           
-          <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 text-cream tracking-tight drop-shadow-md">
-            {displaySubCategory} Edit
-          </h1>
-          <p className="text-lg text-cream/90 font-light leading-relaxed drop-shadow-md">
-            Curated {displaySubCategory.toLowerCase()} pieces from our {displayCategory} collection. 
-          </p>
+          <div className="relative z-20 text-center px-6 flex flex-col items-center w-full max-w-3xl mx-auto">
+            {/* Breadcrumb Navigation */}
+            <div className="flex items-center gap-3 text-cream/80 uppercase tracking-[0.3em] text-xs font-bold mb-4 drop-shadow-md border-b border-cream/30 pb-2">
+              <Link href={`/category/${slug}`} className="hover:text-cream transition-colors">{displayCategory}</Link>
+              <span className="opacity-50">/</span>
+              <span className="text-cream">{displaySubCategory}</span>
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4 text-cream tracking-tight drop-shadow-md">
+              {displaySubCategory} Edit
+            </h1>
+            <p className="text-base md:text-lg text-cream/90 font-light leading-relaxed drop-shadow-md max-w-xl mx-auto">
+              Curated {displaySubCategory.toLowerCase()} pieces from our {displayCategory} collection. 
+            </p>
+          </div>
         </div>
       </section>
 

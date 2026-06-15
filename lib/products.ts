@@ -2,7 +2,7 @@ import { Product } from "@/data/cloths";
 import { db } from "./firebase";
 import { collection, getDocs, getDoc, doc, query, where } from "firebase/firestore";
 
-// Helper to serialize Firestore data (converts Timestamps to ISO strings)
+// Helper to serialize and normalize Firestore data (converts Timestamps and normalizes fields)
 function serializeData(data: any) {
   const serialized = { ...data };
   if (serialized.createdAt && typeof serialized.createdAt.toDate === 'function') {
@@ -11,6 +11,30 @@ function serializeData(data: any) {
   if (serialized.updatedAt && typeof serialized.updatedAt.toDate === 'function') {
     serialized.updatedAt = serialized.updatedAt.toDate().toISOString();
   }
+  
+  // Normalize schema differences (title -> name, base_price -> price, etc.)
+  serialized.name = serialized.name || serialized.title || "";
+  serialized.price = serialized.price !== undefined ? serialized.price : (serialized.base_price || 0);
+  serialized.subCategory = serialized.subCategory || serialized.sub_category || "";
+  
+  const rawImage = serialized.image || serialized.image_url || "";
+  const validLocalImages = [
+    "/accessories.png", "/ankle_boots.png", "/brand-story.png", "/heritage.png", 
+    "/hero.png", "/hero-v2.png", "/jersey_tee.png", "/leather_tote.png", "/men.png", 
+    "/mens_blazer.png", "/pleated_skirt.png", "/silk_camisole.png", 
+    "/slip_dress.png", "/women.png", "/womens_blazer.png"
+  ];
+  
+  if (rawImage && !rawImage.startsWith('http') && !validLocalImages.includes(rawImage)) {
+    const cat = (serialized.category || "").toLowerCase();
+    if (cat === 'women') serialized.image = '/women.png';
+    else if (cat === 'men') serialized.image = '/men.png';
+    else if (cat === 'accessories') serialized.image = '/accessories.png';
+    else serialized.image = '/hero.png';
+  } else {
+    serialized.image = rawImage || '/hero.png';
+  }
+  
   return serialized;
 }
 
@@ -56,20 +80,26 @@ export async function getPaginatedProducts(options: GetProductsOptions) {
 
   // 2. Search query
   if (options.query) {
-    const q = options.query.toLowerCase().replace(/s$/, ""); // remove trailing 's' for simple plural matching (e.g., womens -> women)
-    const rawQ = options.query.toLowerCase();
+    const rawQ = options.query.toLowerCase().trim();
+    const tokens = rawQ.split(/\s+/).map(t => {
+      // simple stemming: remove trailing 's' if it exists, to match plural/singular
+      return t.endsWith('s') ? t.slice(0, -1) : t;
+    });
+
     result = result.filter(p => {
       const safeName = p.name ? p.name.toLowerCase() : "";
       const safeCat = p.category ? p.category.toLowerCase() : "";
       const safeSubCat = p.subCategory ? p.subCategory.toLowerCase() : "";
       const safeColor = p.color ? p.color.toLowerCase() : "";
 
-      const nameMatch = safeName.includes(rawQ) || safeName.includes(q);
-      const catMatch = safeCat.includes(rawQ) || safeCat.includes(q);
-      const subCatMatch = safeSubCat.includes(rawQ) || safeSubCat.includes(q);
-      const colorMatch = safeColor.includes(rawQ) || safeColor.includes(q);
-
-      return nameMatch || catMatch || subCatMatch || colorMatch;
+      // Ensure every token from the search query matches at least one product attribute
+      return tokens.every(token => 
+        safeName.includes(token) || 
+        safeCat.includes(token) || 
+        safeSubCat.includes(token) || 
+        safeColor.includes(token) ||
+        safeName.includes(rawQ) // fallback for exact phrase match
+      );
     });
   }
 

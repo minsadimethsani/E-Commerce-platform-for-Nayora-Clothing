@@ -21,10 +21,10 @@ async function seedOtherCollections() {
 
   // 1. Categories
   const categories = [
-    { id: "women", title: "Women's Collection", description: "Discover the latest trends in women's fashion.", heroImage: "/women-hero.jpg", isActive: true },
-    { id: "men", title: "Men's Collection", description: "Elevate your wardrobe with our men's essentials.", heroImage: "/men-hero.jpg", isActive: true },
-    { id: "accessories", title: "Accessories", description: "The perfect finishing touches to any outfit.", heroImage: "/accessories-hero.jpg", isActive: true },
-    { id: "unisex", title: "Unisex", description: "Versatile pieces designed for everyone.", heroImage: "/unisex-hero.jpg", isActive: true }
+    { id: "women", title: "Women's Collection", description: "Discover the latest trends in women's fashion.", heroImage: "/women.png", isActive: true },
+    { id: "men", title: "Men's Collection", description: "Elevate your wardrobe with our men's essentials.", heroImage: "/men.png", isActive: true },
+    { id: "accessories", title: "Accessories", description: "The perfect finishing touches to any outfit.", heroImage: "/accessories.png", isActive: true },
+    { id: "unisex", title: "Unisex", description: "Versatile pieces designed for everyone.", heroImage: "/heritage.png", isActive: true }
   ];
 
   for (const cat of categories) {

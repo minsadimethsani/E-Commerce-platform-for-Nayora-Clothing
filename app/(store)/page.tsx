@@ -6,76 +6,119 @@ import CuratedCategoriesSkeleton from "@/components/CuratedCategoriesSkeleton";
 
 export default function Home() {
   return (
-    <div className="flex flex-col w-full bg-cream text-espresso">
-      {/* Hero Section */}
-      <section className="relative w-full h-[85vh] flex items-center justify-center overflow-hidden bg-cream">
-        <Image 
-          src="/hero.png" 
-          alt="Nayora Premium Collection" 
-          fill 
-          className="object-cover object-center opacity-90"
-          priority
-        />
-        {/* Changed to a light overlay so dark text is readable */}
-        <div className="absolute inset-0 bg-cream/40 z-10 pointer-events-none"></div>
-        
-        <div className="relative z-20 text-center px-4 flex flex-col items-center w-full max-w-4xl mx-auto">
-          <span className="text-espresso uppercase tracking-[0.3em] text-sm md:text-base font-bold mb-6 drop-shadow-sm">
-            The New Standard
-          </span>
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold mb-8 text-espresso leading-tight drop-shadow-sm">
-            Elevated Essentials
-          </h1>
-          <p className="text-lg md:text-xl text-espresso/90 max-w-2xl mb-12 font-medium leading-relaxed drop-shadow-sm">
-            Discover our latest collection blending timeless espresso tones with organic textures. Designed for the sophisticated minimalist.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-6 w-full sm:w-auto justify-center">
-            <Link 
-              href="/collections" 
-              className="px-10 py-4 bg-[#9F8170] text-cream text-sm uppercase tracking-widest font-bold hover:bg-[#8C7162] transition-colors text-center rounded-md shadow-2xl"
-            >
-              Shop Collection
-            </Link>
-            <Link 
-              href="/lookbook" 
-              className="px-10 py-4 bg-[#8C7162] text-cream text-sm uppercase tracking-widest font-bold hover:bg-[#9F8170] transition-colors text-center rounded-md shadow-2xl"
-            >
-              Explore Lookbook
-            </Link>
+    <div className="flex flex-col w-full bg-[#FAF9F6] text-[#2C241E] overflow-hidden">
+      {/* Editorial Hero Section */}
+      <section className="relative w-full pt-6 md:pt-16 pb-12 bg-[#FAF9F6] px-6 md:px-12 lg:px-16 overflow-hidden">
+        <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+
+          {/* Content Left */}
+          <div className="w-full lg:w-1/2 flex flex-col justify-center order-2 lg:order-1 mt-4 lg:mt-0 z-10">
+            <span className="inline-block text-[#8C7162] uppercase tracking-[0.4em] text-xs font-bold mb-6 border-b border-[#8C7162]/30 pb-2 self-start">
+            </span>
+            <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-serif text-[#2C241E] leading-[1.05] mb-8">
+              Redefining <br /> <i className="font-light text-[#8C7162]">Modernity</i>.
+            </h1>
+            <p className="text-lg md:text-xl text-[#2C241E]/80 max-w-lg mb-12 font-light leading-relaxed">
+              Effortless style for every story. Discover premium, everyday essentials designed to make you look and feel your absolute best.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto">
+              <Link
+                href="/collections"
+                className="px-8 py-4 bg-[#2C241E] text-[#FAF9F6] text-xs uppercase tracking-widest font-bold hover:bg-[#8C7162] transition-colors duration-300 text-center shadow-lg"
+              >
+                Shop The Collection
+              </Link>
+              <Link
+                href="/lookbook"
+                className="px-8 py-4 bg-transparent border border-[#2C241E] text-[#2C241E] text-xs uppercase tracking-widest font-bold hover:bg-[#2C241E] hover:text-[#FAF9F6] transition-colors duration-300 text-center"
+              >
+                View Lookbook
+              </Link>
+            </div>
+          </div>
+
+          {/* Image Right */}
+          <div className="w-full lg:w-1/2 order-1 lg:order-2 relative">
+            <div className="absolute top-0 right-0 w-full h-full bg-[#EAE5DF] rounded-t-[10rem] rounded-b-[2rem] transform translate-x-4 translate-y-4 lg:translate-x-8 lg:translate-y-8 -z-10"></div>
+            <div className="relative w-full h-[60vh] lg:h-[75vh] overflow-hidden rounded-t-[10rem] rounded-b-[2rem] shadow-2xl">
+              <Image
+                src="/hero-v2.png"
+                alt="Nayora Editorial Collection"
+                fill
+                className="object-cover object-center"
+                priority
+              />
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* Featured Statement / Manifesto */}
+      <section className="py-24 md:py-32 px-6 md:px-12 max-w-5xl mx-auto flex flex-col items-center justify-center text-center">
+        <span className="text-[#8C7162] uppercase tracking-[0.3em] text-xs font-bold mb-8">Our Philosophy</span>
+        <h2 className="text-3xl md:text-5xl lg:text-6xl font-serif leading-[1.3] text-[#2C241E]">
+          "We believe in the power of <span className="italic text-[#8C7162]">understated elegance</span>. Every piece is a dialogue between form, fabric, and the wearer."
+        </h2>
+      </section>
+
+      {/* Categories */}
+      <div className="px-4 md:px-8">
+        <Suspense fallback={<CuratedCategoriesSkeleton />}>
+          <CuratedCategories />
+        </Suspense>
+      </div>
+
+      {/* Brand Value Section - Asymmetrical Layout */}
+      <section className="py-24 md:py-32 bg-[#FAF9F6]">
+        <div className="container mx-auto px-6 md:px-12">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center">
+
+            <div className="md:col-span-5 md:col-start-2 relative aspect-[3/4] md:aspect-[4/5] rounded-tl-[4rem] rounded-br-[4rem] overflow-hidden shadow-2xl">
+              <Image
+                src="/brand-story.png"
+                alt="Nayora Craftsmanship"
+                fill
+                className="object-cover object-center hover:scale-110 transition-transform duration-[1.5s] ease-out"
+              />
+            </div>
+
+            <div className="md:col-span-5 md:col-start-8 flex flex-col justify-center">
+              <span className="text-[#8C7162] uppercase tracking-[0.3em] text-xs font-bold mb-6">The Craft</span>
+              <h2 className="text-4xl md:text-6xl font-serif mb-8 leading-tight text-[#2C241E]">
+                Artistry in <br /> <span className="italic text-[#8C7162]">Every Stitch</span>
+              </h2>
+              <p className="text-[#2C241E]/70 text-lg mb-10 leading-relaxed font-light">
+                Our materials are hand-selected from the most responsible mills across the globe. We prioritize organic fibers and ethical production, ensuring that your wardrobe not only looks exquisite but aligns with a sustainable future.
+              </p>
+              <div>
+                <Link href="/about" className="group inline-flex items-center gap-4 text-sm uppercase tracking-widest font-semibold text-[#2C241E]">
+                  <span className="border-b border-[#2C241E] pb-1 group-hover:border-[#8C7162] group-hover:text-[#8C7162] transition-colors">Discover Our Story</span>
+                  <span className="w-8 h-[1px] bg-[#2C241E] group-hover:w-12 group-hover:bg-[#8C7162] transition-all duration-300"></span>
+                </Link>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* Featured Statement */}
-      <section className="py-24 px-6 md:px-12 text-center max-w-4xl mx-auto">
-        <h2 className="text-3xl md:text-5xl font-serif leading-snug text-espresso">
-          "Simplicity is the ultimate sophistication. We craft garments that speak through silhouette and texture."
-        </h2>
-        <div className="mt-8 w-12 h-[1px] bg-olive mx-auto"></div>
-      </section>
-
-      {/* Categories */}
-      <Suspense fallback={<CuratedCategoriesSkeleton />}>
-        <CuratedCategories />
-      </Suspense>
-      
-      {/* Brand Value Section */}
-      <section className="py-24 mt-12 bg-espresso text-cream">
-        <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-          <div className="order-2 md:order-1 flex flex-col justify-center">
-            <h2 className="text-3xl md:text-5xl font-serif mb-8 leading-tight">Crafted with Intention, Designed for Life.</h2>
-            <p className="text-cream/80 text-lg mb-10 leading-relaxed font-light">
-              At Nayora Clothing, we believe that every piece in your wardrobe should serve a purpose. We source the finest sustainable materials to create garments that outlast trends and become true staples in your everyday journey.
-            </p>
-            <div>
-              <Link href="/about" className="inline-block px-8 py-4 bg-cream text-espresso text-sm uppercase tracking-widest font-semibold hover:bg-olive hover:text-cream transition-colors">
-                Read Our Story
-              </Link>
-            </div>
-          </div>
-          <div className="order-1 md:order-2 relative aspect-square md:aspect-[4/5] bg-cream/10">
-            <Image src="/hero.png" alt="Nayora Brand Value" fill className="object-cover object-center" />
-          </div>
+      {/* Newsletter / Closing Section */}
+      <section className="py-24 bg-[#2C241E] text-[#FAF9F6] text-center px-6">
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-3xl md:text-5xl font-serif mb-6">Join The Inner Circle</h2>
+          <p className="text-[#FAF9F6]/70 mb-10 font-light text-lg">Subscribe to receive early access to new collections, exclusive events, and editorial content.</p>
+          <form className="flex flex-col sm:flex-row gap-4 w-full max-w-md mx-auto">
+            <input
+              type="email"
+              placeholder="Your email address"
+              className="flex-1 bg-transparent border-b border-[#FAF9F6]/30 px-4 py-3 text-[#FAF9F6] focus:outline-none focus:border-[#FAF9F6] transition-colors rounded-none"
+            />
+            <button type="button" className="px-8 py-3 bg-[#FAF9F6] text-[#2C241E] text-xs uppercase tracking-widest font-bold hover:bg-[#D4C3B3] transition-colors">
+              Subscribe
+            </button>
+          </form>
         </div>
       </section>
     </div>

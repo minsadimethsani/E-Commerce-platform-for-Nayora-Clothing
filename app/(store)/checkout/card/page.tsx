@@ -77,7 +77,7 @@ export default function CardDetailsPage() {
 
   return (
     <div className="flex flex-col w-full bg-cream text-espresso min-h-screen">
-      <section className="pt-24 pb-16 px-6 md:px-12 text-center bg-espresso/5 border-b border-espresso/10">
+      <section className="pt-6 md:pt-16 pb-16 px-6 md:px-12 text-center bg-espresso/5 border-b border-espresso/10">
         <h1 className="text-4xl font-serif font-bold mb-4 tracking-tight">Card Details</h1>
         <p className="text-espresso/70 max-w-xl mx-auto text-sm uppercase tracking-widest font-bold">Step 3 of 3</p>
       </section>

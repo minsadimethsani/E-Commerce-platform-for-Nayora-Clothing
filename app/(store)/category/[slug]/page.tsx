@@ -29,26 +29,28 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     <div className="flex flex-col w-full bg-cream text-espresso min-h-screen">
       
       {/* Category Hero Section */}
-      <section className="relative w-full h-[60vh] flex items-center justify-center overflow-hidden bg-espresso">
-        <Image 
-          src={meta.heroImage} 
-          alt={meta.title} 
-          fill 
-          className="object-cover object-center opacity-70"
-          priority
-        />
-        <div className="absolute inset-0 bg-espresso/30 z-10 pointer-events-none"></div>
-        
-        <div className="relative z-20 text-center px-6 flex flex-col items-center w-full max-w-3xl mx-auto">
-          <span className="text-cream uppercase tracking-[0.4em] text-xs font-bold mb-6 drop-shadow-md">
-            The Collection
-          </span>
-          <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 text-cream tracking-tight drop-shadow-md">
-            {meta.title}
-          </h1>
-          <p className="text-lg text-cream/90 font-light leading-relaxed drop-shadow-md">
-            {meta.description}
-          </p>
+      <section className="relative w-full pt-6 md:pt-16 pb-8 bg-cream px-4 md:px-8">
+        <div className="w-full max-w-7xl h-[50vh] md:h-[60vh] mx-auto relative overflow-hidden rounded-2xl md:rounded-[2rem] shadow-xl flex items-center justify-center bg-espresso">
+          <Image 
+            src={meta.heroImage} 
+            alt={meta.title} 
+            fill 
+            className="object-cover object-center opacity-70"
+            priority
+          />
+          <div className="absolute inset-0 bg-espresso/30 z-10 pointer-events-none"></div>
+          
+          <div className="relative z-20 text-center px-6 flex flex-col items-center w-full max-w-3xl mx-auto">
+            <span className="text-cream uppercase tracking-[0.4em] text-xs font-bold mb-4 drop-shadow-md border-b border-cream/30 pb-2">
+              The Collection
+            </span>
+            <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4 text-cream tracking-tight drop-shadow-md">
+              {meta.title}
+            </h1>
+            <p className="text-base md:text-lg text-cream/90 font-light leading-relaxed drop-shadow-md max-w-xl mx-auto">
+              {meta.description}
+            </p>
+          </div>
         </div>
       </section>
 

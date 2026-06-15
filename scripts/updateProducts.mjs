@@ -1,16 +1,20 @@
-export interface Product {
-  id: string | number;
-  name: string;
-  category: string; // e.g. "women", "men", "accessories", "unisex"
-  subCategory?: string; // e.g. "formal", "casual", "loungewear", "partywear", "bags", "eyewear", "jewelry", "accents"
-  price: number;
-  image: string;
-  images?: string[];
-  color?: string;
-  tag?: string;
-}
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
-export const cloths: Product[] = [
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+export const cloths = [
   { id: "silk-blend-slip-dress", name: "Silk Blend Slip Dress", category: "women", subCategory: "partywear", price: 245, image: "/slip_dress.png", color: "Cream", tag: "Best Seller" },
   { id: "tailored-linen-blazer", name: "Tailored Linen Blazer", category: "men", subCategory: "formal", price: 320, image: "/mens_blazer.png", color: "Espresso", tag: "Just Added" },
   { id: "woven-leather-tote", name: "Woven Leather Tote", category: "accessories", subCategory: "bags", price: 185, image: "/leather_tote.png", color: "Olive", tag: "Editor's Pick" },
@@ -32,3 +36,16 @@ export const cloths: Product[] = [
   { id: "raw-silk-camisole", name: "Raw Silk Camisole", category: "women", subCategory: "partywear", price: 185, image: "/silk_camisole.png", color: "Cream", tag: "Selling Fast" },
   { id: "woven-leather-satchel", name: "Woven Leather Satchel", category: "accessories", subCategory: "bags", price: 295, image: "/accessories.png", color: "Espresso", tag: "Editor's Pick" }
 ];
+
+async function updateProducts() {
+  console.log("Updating products...");
+  for (const product of cloths) {
+    const { id, ...data } = product;
+    await setDoc(doc(db, "products", id), { ...data, updatedAt: new Date() }, { merge: true });
+    console.log(`Updated product: ${id}`);
+  }
+  console.log("Finished updating products!");
+  process.exit(0);
+}
+
+updateProducts().catch(console.error);

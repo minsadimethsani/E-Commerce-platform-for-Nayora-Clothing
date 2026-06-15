@@ -20,19 +20,28 @@ function CollectionsContent() {
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page") || "1", 10));
   const [sortOption, setSortOption] = useState(searchParams.get("sort") || "Featured");
   const [searchQuery, setSearchQuery] = useState(searchParams.get("query") || "");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
   
   const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   // Sync state to URL and fetch data
   useEffect(() => {
+    let ignore = false;
     const params = new URLSearchParams();
     if (activeCategory !== "All") params.set("category", activeCategory);
     if (currentPage > 1) params.set("page", currentPage.toString());
     if (sortOption !== "Featured") params.set("sort", sortOption);
-    if (searchQuery.trim() !== "") params.set("query", searchQuery.trim());
+    if (debouncedSearchQuery.trim() !== "") params.set("query", debouncedSearchQuery.trim());
     
     router.replace(`/collections?${params.toString()}`, { scroll: false });
 
@@ -44,18 +53,28 @@ function CollectionsContent() {
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
         
-        setProducts(data.products);
-        setTotalPages(data.totalPages);
-        setTotalItems(data.total);
+        if (!ignore) {
+          setProducts(data.products);
+          setTotalPages(data.totalPages);
+          setTotalItems(data.total);
+        }
       } catch (err) {
-        console.error("Error fetching products:", err);
+        if (!ignore) {
+          console.error("Error fetching products:", err);
+        }
       } finally {
-        setIsLoading(false);
+        if (!ignore) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchProducts();
-  }, [activeCategory, currentPage, sortOption, router]);
+
+    return () => {
+      ignore = true;
+    };
+  }, [activeCategory, currentPage, sortOption, debouncedSearchQuery, router]);
 
   const handleCategoryChange = (cat: string) => {
     setActiveCategory(cat);
@@ -70,7 +89,7 @@ function CollectionsContent() {
   return (
     <div className="flex flex-col w-full bg-cream text-espresso min-h-screen">
       {/* Page Header */}
-      <section className="pt-24 pb-16 px-6 md:px-12 text-center bg-espresso/5 border-b border-espresso/10">
+      <section className="pt-6 md:pt-16 pb-16 px-6 md:px-12 text-center bg-espresso/5 border-b border-espresso/10">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-6 tracking-tight">The Collections</h1>
         <p className="text-espresso/70 max-w-xl mx-auto font-light text-lg">
           Explore our curated selection of timeless pieces. Designed with intention and crafted from the finest sustainable materials.
@@ -127,7 +146,15 @@ function CollectionsContent() {
           {/* Active Filters & Sort */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 text-sm gap-6">
             <div className="text-espresso/60 font-medium">
-              Showing <span className="text-espresso font-bold">{totalItems}</span> results for {activeCategory === "All" ? "All Categories" : activeCategory}
+              Showing <span className="text-espresso font-bold">{totalItems}</span> results
+              {debouncedSearchQuery && (
+                <span> for "<span className="text-espresso font-bold">{debouncedSearchQuery}</span>"</span>
+              )}
+              {activeCategory !== "All" ? (
+                <span> in {activeCategory}</span>
+              ) : (
+                !debouncedSearchQuery && <span> for All Categories</span>
+              )}
             </div>
             <div className="flex items-center gap-4 border border-espresso/20 px-4 py-2 rounded-sm bg-white/50">
               <span className="text-espresso/60 uppercase tracking-widest text-[10px] font-bold">Sort By</span>

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getOrders } from "@/lib/db";
 import OrdersTable from "./components/OrdersTable";
 import OrdersFilter from "./components/OrdersFilter";
@@ -6,10 +7,11 @@ import Pagination from "../products/components/Pagination"; // Reusing the pagin
 export default async function ManageOrders({
   searchParams,
 }: {
-  searchParams: { page?: string; status?: string };
+  searchParams: Promise<{ page?: string; status?: string }>;
 }) {
-  const currentPage = Number(searchParams?.page) || 1;
-  const statusFilter = searchParams?.status || "all";
+  const resolvedSearchParams = await searchParams;
+  const currentPage = Number(resolvedSearchParams?.page) || 1;
+  const statusFilter = resolvedSearchParams?.status || "all";
 
   // Server-side fetch with pagination and filtering
   const { items, totalPages, totalItems } = await getOrders(statusFilter, currentPage);
@@ -26,7 +28,9 @@ export default async function ManageOrders({
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white p-4 rounded-xl shadow-sm border border-neutral-100">
-        <OrdersFilter currentStatus={statusFilter} />
+        <Suspense fallback={<div className="h-10 w-32 bg-neutral-100 animate-pulse rounded-md"></div>}>
+          <OrdersFilter currentStatus={statusFilter} />
+        </Suspense>
         <div className="mt-4 sm:mt-0 text-sm text-neutral-500 font-medium">
           Showing <span className="text-neutral-900">{items.length}</span> of <span className="text-neutral-900">{totalItems}</span> orders
         </div>
@@ -35,7 +39,9 @@ export default async function ManageOrders({
       <OrdersTable orders={items} />
 
       {totalPages > 1 && (
-        <Pagination currentPage={currentPage} totalPages={totalPages} />
+        <Suspense fallback={<div className="h-10 w-full bg-neutral-100 animate-pulse rounded-md"></div>}>
+          <Pagination currentPage={currentPage} totalPages={totalPages} />
+        </Suspense>
       )}
     </div>
   );

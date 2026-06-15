@@ -12,7 +12,7 @@ export default async function NewArrivals() {
     <div className="flex flex-col w-full bg-cream text-espresso min-h-screen">
       
       {/* Editorial Header */}
-      <section className="relative w-full pt-32 pb-24 px-6 text-center border-b border-espresso/10 bg-gradient-to-b from-espresso/5 to-cream">
+      <section className="relative w-full pt-6 md:pt-16 pb-24 px-6 text-center border-b border-espresso/10 bg-gradient-to-b from-espresso/5 to-cream">
         <span className="text-espresso uppercase tracking-[0.3em] text-xs font-bold mb-6 block drop-shadow-sm">
           Volume 01
         </span>

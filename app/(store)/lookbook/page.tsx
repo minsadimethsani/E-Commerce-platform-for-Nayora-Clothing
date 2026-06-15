@@ -8,7 +8,7 @@ const looksData = [
     title: "The Autumn Transition",
     description: "A masterclass in layering. Blending organic textures with sharp, structured outerwear for an effortlessly sophisticated silhouette.",
     image: "/hero.png",
-    productIds: ["organic-cotton-overcoat", "cashmere-turtleneck", "suede-ankle-boots"]
+    productIds: ["womens-wool-blazer", "pleated-midi-skirt", "suede-ankle-boots"]
   },
   {
     id: "02",
@@ -42,7 +42,7 @@ export default async function LookbookPage() {
     <div className="flex flex-col w-full bg-cream text-espresso min-h-screen">
       
       {/* Header */}
-      <section className="pt-32 pb-20 px-6 text-center border-b border-espresso/10">
+      <section className="pt-6 md:pt-16 pb-20 px-6 text-center border-b border-espresso/10">
         <span className="text-espresso uppercase tracking-[0.3em] text-xs font-bold mb-6 block">
           Editorial
         </span>
@@ -57,29 +57,31 @@ export default async function LookbookPage() {
       {/* Looks */}
       <div className="flex flex-col">
         {looks.map((look, index) => (
-          <section key={look.id} className={`flex flex-col lg:flex-row min-h-screen border-b border-espresso/10 ${index % 2 !== 0 ? 'lg:flex-row-reverse' : ''}`}>
+          <section key={look.id} className={`flex flex-col lg:flex-row py-12 lg:py-24 border-b border-espresso/10 bg-cream ${index % 2 !== 0 ? 'lg:flex-row-reverse' : ''}`}>
             
-            {/* Massive Editorial Image */}
-            <div className="w-full lg:w-1/2 relative min-h-[60vh] lg:min-h-screen overflow-hidden group">
-              <Image 
-                src={look.image} 
-                alt={look.title} 
-                fill 
-                className="object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out" 
-              />
-              <div className="absolute inset-0 bg-espresso/10 pointer-events-none"></div>
-              
-              {/* Floating Look Number */}
-              <div className="absolute top-8 left-8 lg:top-12 lg:left-12">
-                <span className="text-6xl font-serif text-cream drop-shadow-md font-bold opacity-90">
-                  {look.id}
-                </span>
+            {/* Framed Editorial Image */}
+            <div className="w-full lg:w-5/12 flex items-start justify-center p-6 lg:px-12 lg:pt-0">
+              <div className="relative w-full max-w-lg h-[60vh] lg:h-[75vh] overflow-hidden rounded-[2rem] shadow-xl group">
+                <Image 
+                  src={look.image} 
+                  alt={look.title} 
+                  fill 
+                  className="object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out" 
+                />
+                <div className="absolute inset-0 bg-espresso/5 pointer-events-none"></div>
+                
+                {/* Floating Look Number */}
+                <div className="absolute top-6 left-6 lg:top-8 lg:left-8">
+                  <span className="text-5xl font-serif text-cream drop-shadow-md font-bold opacity-90">
+                    {look.id}
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* Look Details & Products */}
-            <div className="w-full lg:w-1/2 flex flex-col justify-center px-6 md:px-16 lg:px-24 py-20 bg-espresso/5">
-              <div className="max-w-md mx-auto w-full">
+            <div className="w-full lg:w-7/12 flex flex-col justify-start px-6 md:px-12 lg:px-20 py-12 lg:py-0">
+              <div className="max-w-xl mx-auto lg:mx-0 w-full">
                 <h2 className="text-3xl md:text-5xl font-serif font-bold mb-6">{look.title}</h2>
                 <p className="text-espresso/70 text-lg leading-relaxed font-light mb-16">
                   {look.description}

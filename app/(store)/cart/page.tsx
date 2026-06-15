@@ -48,7 +48,7 @@ export default function CartPage() {
 
   return (
     <div className="flex flex-col w-full bg-cream text-espresso min-h-screen">
-      <section className="pt-24 pb-16 px-6 md:px-12 text-center bg-espresso/5 border-b border-espresso/10">
+      <section className="pt-6 md:pt-16 pb-16 px-6 md:px-12 text-center bg-espresso/5 border-b border-espresso/10">
         <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 tracking-tight">Shopping Cart</h1>
       </section>
 

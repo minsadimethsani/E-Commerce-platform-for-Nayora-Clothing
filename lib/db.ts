@@ -20,6 +20,30 @@ function serializeData(data: any) {
   if (serialized.date && typeof serialized.date.toDate === 'function') {
     serialized.date = serialized.date.toDate().toISOString();
   }
+  
+  // Normalize schema differences (title -> name, base_price -> price, etc.)
+  serialized.name = serialized.name || serialized.title || "Unnamed Product";
+  serialized.price = serialized.price !== undefined ? serialized.price : (serialized.base_price || 0);
+  serialized.subCategory = serialized.subCategory || serialized.sub_category || "";
+  
+  const rawImage = serialized.image || serialized.image_url || "";
+  const validLocalImages = [
+    "/accessories.png", "/ankle_boots.png", "/brand-story.png", "/heritage.png", 
+    "/hero.png", "/hero-v2.png", "/jersey_tee.png", "/leather_tote.png", "/men.png", 
+    "/mens_blazer.png", "/pleated_skirt.png", "/silk_camisole.png", 
+    "/slip_dress.png", "/women.png", "/womens_blazer.png"
+  ];
+  
+  if (rawImage && !rawImage.startsWith('http') && !validLocalImages.includes(rawImage)) {
+    const cat = (serialized.category || "").toLowerCase();
+    if (cat === 'women') serialized.image = '/women.png';
+    else if (cat === 'men') serialized.image = '/men.png';
+    else if (cat === 'accessories') serialized.image = '/accessories.png';
+    else serialized.image = '/hero.png';
+  } else {
+    serialized.image = rawImage || '/hero.png';
+  }
+  
   return serialized;
 }
 
