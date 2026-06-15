@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+import { collection, serverTimestamp, doc, getDoc, runTransaction } from 'firebase/firestore';
 
 export async function POST(request: Request) {
   try {
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, email, address } = shippingDetails;
+    const { name, email, address, phone } = shippingDetails;
     if (!name || !email || !address) {
       return NextResponse.json(
         { error: 'Missing shipping details' },
@@ -72,6 +72,7 @@ export async function POST(request: Request) {
       shippingDetails: {
         name,
         email,
+        phone: phone || "Not provided",
         address,
         carrier: "Pending",
         trackingNumber: ""
@@ -79,11 +80,39 @@ export async function POST(request: Request) {
       createdAt: serverTimestamp()
     };
 
-    const docRef = await addDoc(collection(db, "orders"), orderData);
+    // Use a transaction to maintain an atomic counter for ORD-001, ORD-002, etc.
+    const counterRef = doc(db, "counters", "ordersCounter");
+    
+    const result = await runTransaction(db, async (transaction) => {
+      const counterSnap = await transaction.get(counterRef);
+      let newCount = 1;
+      
+      if (counterSnap.exists() && typeof counterSnap.data().count === 'number') {
+        newCount = counterSnap.data().count + 1;
+      }
+      
+      // Update counter
+      transaction.set(counterRef, { count: newCount }, { merge: true });
+      
+      // Generate formatted order number
+      const orderNumber = `ORD-${String(newCount).padStart(3, '0')}`;
+      
+      // Generate new document ref for the order
+      const newOrderRef = doc(collection(db, "orders"));
+      
+      // Save order with the new sequential order number
+      transaction.set(newOrderRef, {
+        ...orderData,
+        orderNumber
+      });
+      
+      return { docId: newOrderRef.id, orderNumber };
+    });
 
     return NextResponse.json({
       success: true,
-      orderId: docRef.id,
+      orderId: result.docId,
+      orderNumber: result.orderNumber,
       message: 'Order processed successfully!'
     });
 

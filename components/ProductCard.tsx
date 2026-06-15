@@ -11,11 +11,11 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
       )}
       <Link href={`/product/${product.id}`} className="relative aspect-[3/4] overflow-hidden mb-5 bg-espresso/5">
-        <Image 
-          src={product.image || "/hero.png"} 
-          alt={product.name || "Product image"} 
-          fill 
-          className="object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out" 
+        <Image
+          src={product.image || "/hero.png"}
+          alt={product.name || "Product image"}
+          fill
+          className="object-cover group-hover:scale-110 transition-transform duration-[1.5s] ease-out"
         />
         {/* Quick View Overlay */}
         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
