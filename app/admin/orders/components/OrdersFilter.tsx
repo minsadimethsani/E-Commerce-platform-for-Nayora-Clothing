@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function OrdersFilter({ currentStatus }: { currentStatus: string }) {
+function OrdersFilterContent({ currentStatus }: { currentStatus: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -40,5 +41,13 @@ export default function OrdersFilter({ currentStatus }: { currentStatus: string 
         ))}
       </select>
     </div>
+  );
+}
+
+export default function OrdersFilter({ currentStatus }: { currentStatus: string }) {
+  return (
+    <Suspense fallback={<div className="h-10 w-40 bg-neutral-100 animate-pulse rounded-md"></div>}>
+      <OrdersFilterContent currentStatus={currentStatus} />
+    </Suspense>
   );
 }

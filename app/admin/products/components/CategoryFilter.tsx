@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function CategoryFilter({ currentCategory }: { currentCategory: string }) {
+function CategoryFilterContent({ currentCategory }: { currentCategory: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -39,5 +40,13 @@ export default function CategoryFilter({ currentCategory }: { currentCategory: s
         ))}
       </select>
     </div>
+  );
+}
+
+export default function CategoryFilter({ currentCategory }: { currentCategory: string }) {
+  return (
+    <Suspense fallback={<div className="h-10 w-40 bg-neutral-100 animate-pulse rounded-md"></div>}>
+      <CategoryFilterContent currentCategory={currentCategory} />
+    </Suspense>
   );
 }

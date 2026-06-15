@@ -2,8 +2,9 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function Pagination({ 
+function PaginationContent({ 
   currentPage, 
   totalPages 
 }: { 
@@ -81,5 +82,19 @@ export default function Pagination({
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Pagination({ 
+  currentPage, 
+  totalPages 
+}: { 
+  currentPage: number; 
+  totalPages: number;
+}) {
+  return (
+    <Suspense fallback={<div className="h-14 w-full bg-neutral-100 animate-pulse rounded-xl mt-4"></div>}>
+      <PaginationContent currentPage={currentPage} totalPages={totalPages} />
+    </Suspense>
   );
 }
