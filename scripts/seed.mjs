@@ -1,14 +1,16 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 
+import 'dotenv/config';
+
 const firebaseConfig = {
-  apiKey: "AIzaSyBrD-kic2tsQH-KQktDgz1LSScg5-whQbg",
-  authDomain: "project--nayora.firebaseapp.com",
-  projectId: "project--nayora",
-  storageBucket: "project--nayora.firebasestorage.app",
-  messagingSenderId: "150782726885",
-  appId: "1:150782726885:web:8df66c10c949cfeffbfa0c",
-  measurementId: "G-Q21DFRLQDN"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);
