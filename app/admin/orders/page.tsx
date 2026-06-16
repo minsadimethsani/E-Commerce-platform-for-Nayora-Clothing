@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import { getOrders } from "@/lib/db";
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import OrdersTable from "./components/OrdersTable";
 import OrdersFilter from "./components/OrdersFilter";
 import Pagination from "../products/components/Pagination"; // Reusing the pagination component
@@ -12,6 +14,11 @@ export default async function ManageOrders({
   const resolvedSearchParams = await searchParams;
   const currentPage = Number(resolvedSearchParams?.page) || 1;
   const statusFilter = resolvedSearchParams?.status || "all";
+
+  const session = await getSession();
+  if (session?.role !== "super_admin" && !session?.privileges?.includes("manage_orders")) {
+    redirect("/admin");
+  }
 
   // Server-side fetch with pagination and filtering
   const { items, totalPages, totalItems } = await getOrders(statusFilter, currentPage);

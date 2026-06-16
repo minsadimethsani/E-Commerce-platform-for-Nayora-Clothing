@@ -1,0 +1,11 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Anyone can view product images on your e-commerce store
+    match /products/{allPaths=**} {
+      allow read: if true;
+      // Allow writes for now to fix the upload issue
+      allow write: if true;
+    }
+  }
+}

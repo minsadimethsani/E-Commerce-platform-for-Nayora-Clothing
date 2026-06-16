@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 import { getProducts } from "@/lib/db";
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
 import AddProductModal from "./components/AddProductModal";
 import ProductsTable from "./components/ProductsTable";
 import Pagination from "./components/Pagination";
@@ -13,6 +15,11 @@ export default async function ManageProducts({
   const resolvedSearchParams = await searchParams;
   const currentPage = Number(resolvedSearchParams?.page) || 1;
   const category = resolvedSearchParams?.category || "all";
+
+  const session = await getSession();
+  if (session?.role !== "super_admin" && !session?.privileges?.includes("manage_products")) {
+    redirect("/admin");
+  }
 
   // Simulate server-side fetch with pagination and filtering
   const { items, totalPages, totalItems } = await getProducts(category, currentPage);

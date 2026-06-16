@@ -109,6 +109,14 @@ Make sure you have [Node.js](https://nodejs.org/) (v18.17 or higher) installed.
 4. **Explore the platform:**
    Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
 
+### Demo Admin Account
+To access the Admin Dashboard with full privileges, use the seeded Super Admin account:
+- **URL:** [http://localhost:3000/auth/login](http://localhost:3000/auth/login)
+- **Email:** `mmethsani@gmail.com`
+- **Password:** `Methsani123#`
+
+*(Note: Additional admin and employee accounts can be created within the dashboard by this Super Admin).*
+
 ---
 
 ## 🏗️ Future Roadmap
