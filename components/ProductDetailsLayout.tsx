@@ -20,12 +20,18 @@ export default function ProductDetailsLayout({ product, relatedProducts }: Produ
   const zoomWrapperRef = useRef<HTMLDivElement>(null);
 
   const handleMouseEnter = () => {
+    if (typeof window !== "undefined" && (window.matchMedia("(hover: none)").matches || window.innerWidth < 768)) {
+      return;
+    }
     if (!zoomWrapperRef.current) return;
     zoomWrapperRef.current.style.transition = "transform 0.3s ease-out";
     zoomWrapperRef.current.style.transform = "scale(2)";
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (typeof window !== "undefined" && (window.matchMedia("(hover: none)").matches || window.innerWidth < 768)) {
+      return;
+    }
     if (!containerRef.current || !zoomWrapperRef.current) return;
     const { left, top, width, height } = containerRef.current.getBoundingClientRect();
     const x = ((e.clientX - left) / width) * 100;
@@ -35,6 +41,9 @@ export default function ProductDetailsLayout({ product, relatedProducts }: Produ
   };
 
   const handleMouseLeave = () => {
+    if (typeof window !== "undefined" && (window.matchMedia("(hover: none)").matches || window.innerWidth < 768)) {
+      return;
+    }
     if (!zoomWrapperRef.current) return;
     zoomWrapperRef.current.style.transition = "transform 0.3s ease-out, transform-origin 0.3s ease-out";
     zoomWrapperRef.current.style.transform = "scale(1)";
@@ -85,7 +94,7 @@ export default function ProductDetailsLayout({ product, relatedProducts }: Produ
           <div className="flex flex-col gap-4">
             <div 
               ref={containerRef}
-              className="relative aspect-[3/4] w-full overflow-hidden bg-espresso/5 border border-espresso/10 cursor-zoom-in group"
+              className="relative aspect-[3/4] w-full overflow-hidden bg-espresso/5 border border-espresso/10 cursor-default md:cursor-zoom-in group"
               onMouseEnter={handleMouseEnter}
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}

@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { User, LogOut, LayoutDashboard } from 'lucide-react';
 import { logoutAction } from '@/app/auth/actions';
 import Image from 'next/image';
+import { Product } from '@/data/cloths';
 
 interface MegamenuColumn {
   title: string;
@@ -131,8 +132,58 @@ const NAV_ITEMS = [
   { label: "OUR STORY", href: "/about" },
 ];
 
-export default function Header({ session }: { session: any }) {
+interface MegamenuImageResult {
+  image: string;
+  caption: string;
+}
+
+function getMegamenuImageForCategory(
+  category: string,
+  products: Product[],
+  heroImageUrls: string[],
+  defaultImage: string
+): MegamenuImageResult {
+  const categoryProducts = products.filter(
+    (p) => String(p.category).toLowerCase() === category.toLowerCase()
+  );
+
+  const inStockProducts = categoryProducts.filter((p) => {
+    return ((p as any).quantity > 0 || (p.variants && p.variants.some((v: any) => v.stock_quantity > 0)));
+  });
+
+  for (const product of inStockProducts) {
+    const allProductImages = [product.image, ...(product.images || [])].filter(Boolean);
+    const nonHeroImage = allProductImages.find((img) => !heroImageUrls.includes(img));
+    if (nonHeroImage) {
+      return {
+        image: nonHeroImage,
+        caption: product.name,
+      };
+    }
+  }
+
+  return {
+    image: defaultImage,
+    caption: category === "women" ? "Sophisticated Silhouettes" : category === "men" ? "Tailored Essentials" : "Timeless Accents",
+  };
+}
+
+export default function Header({ session, products = [] }: { session: any; products?: Product[] }) {
   const pathname = usePathname();
+  
+  // Identify hero slideshow images to exclude them
+  const heroImageUrls = useMemo(() => {
+    return products.filter((p) => p.image).slice(0, 5).map(p => p.image);
+  }, [products]);
+
+  // Dynamically determine megamenu images and captions
+  const megamenuImages = useMemo(() => {
+    return {
+      women: getMegamenuImageForCategory("women", products, heroImageUrls, "/women.png"),
+      men: getMegamenuImageForCategory("men", products, heroImageUrls, "/men.png"),
+      accessories: getMegamenuImageForCategory("accessories", products, heroImageUrls, "/accessories.png"),
+    };
+  }, [products, heroImageUrls]);
   const router = useRouter();
   const { cartCount } = useCart();
   
@@ -341,7 +392,7 @@ export default function Header({ session }: { session: any }) {
               {/* Left Column: Featured Image */}
               <div className="w-[280px] shrink-0 relative aspect-[3/4] rounded-2xl overflow-hidden shadow-md group">
                 <Image 
-                  src={MEGAMENU_DATA[activeCategory].image} 
+                  src={megamenuImages[activeCategory as keyof typeof megamenuImages]?.image || MEGAMENU_DATA[activeCategory].image} 
                   alt={MEGAMENU_DATA[activeCategory].imageAlt} 
                   fill
                   sizes="280px"
@@ -351,7 +402,7 @@ export default function Header({ session }: { session: any }) {
                 <div className="absolute inset-0 bg-gradient-to-t from-espresso/70 via-espresso/10 to-transparent flex flex-col justify-end p-5">
                   <span className="text-[10px] text-cream/70 font-semibold tracking-[0.2em] uppercase mb-1">Featured</span>
                   <span className="text-cream text-lg font-serif font-semibold tracking-wide leading-tight">
-                    {MEGAMENU_DATA[activeCategory].imageCaption}
+                    {megamenuImages[activeCategory as keyof typeof megamenuImages]?.caption || MEGAMENU_DATA[activeCategory].imageCaption}
                   </span>
                 </div>
               </div>

@@ -1,9 +1,10 @@
 "use client";
 
-import { Edit, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { AdminProduct } from "@/lib/db";
 import { deleteProductAction } from "../actions";
 import { useTransition } from "react";
+import EditProductModal from "./EditProductModal";
 
 export default function ProductsTable({ products }: { products: AdminProduct[] }) {
   const [isPending, startTransition] = useTransition();
@@ -65,10 +66,7 @@ export default function ProductsTable({ products }: { products: AdminProduct[] }
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button className="text-neutral-500 hover:text-neutral-900 mr-4 transition-colors" disabled={isPending}>
-                    <Edit className="w-4 h-4" />
-                    <span className="sr-only">Edit</span>
-                  </button>
+                  <EditProductModal product={product} />
                   <button 
                     onClick={() => handleDelete(product.id)}
                     className="text-red-500 hover:text-red-700 transition-colors"

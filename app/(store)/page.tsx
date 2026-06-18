@@ -17,6 +17,20 @@ export default async function Home() {
   // Take the first 4 products as New Arrivals
   const newArrivals = sortedProducts.slice(0, 4);
 
+  // Find a product image available within the stock, excluding the first 5 products used in the hero slideshow
+  const heroSlideProducts = allProducts.filter((p) => p.image).slice(0, 5);
+  const heroSlideIds = heroSlideProducts.map((p) => String(p.id));
+
+  const inStockNotHeroProducts = allProducts.filter((p) => {
+    const isInStock = (p as any).quantity > 0 || (p.variants && p.variants.some((v: any) => v.stock_quantity > 0));
+    return p.image && isInStock && !heroSlideIds.includes(String(p.id));
+  });
+
+  const craftSectionProduct = inStockNotHeroProducts.length > 0 
+    ? inStockNotHeroProducts[0] 
+    : null;
+  const craftSectionImage = craftSectionProduct ? craftSectionProduct.image : "/brand-story.png";
+
   return (
     <div className="flex flex-col w-full bg-[#FAF9F6] text-[#2C241E] overflow-hidden">
       {/* Editorial Hero Section */}
@@ -91,12 +105,23 @@ export default async function Home() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center">
 
             <div className="md:col-span-5 md:col-start-2 relative aspect-[3/4] md:aspect-[4/5] rounded-tl-[4rem] rounded-br-[4rem] overflow-hidden shadow-2xl">
-              <Image
-                src="/brand-story.png"
-                alt="Nayora Craftsmanship"
-                fill
-                className="object-cover object-center hover:scale-110 transition-transform duration-[1.5s] ease-out"
-              />
+              {craftSectionProduct ? (
+                <Link href={`/product/${craftSectionProduct.id}`}>
+                  <Image
+                    src={craftSectionImage}
+                    alt={craftSectionProduct.name}
+                    fill
+                    className="object-cover object-center hover:scale-110 transition-transform duration-[1.5s] ease-out cursor-pointer"
+                  />
+                </Link>
+              ) : (
+                <Image
+                  src={craftSectionImage}
+                  alt="Nayora Craftsmanship"
+                  fill
+                  className="object-cover object-center hover:scale-110 transition-transform duration-[1.5s] ease-out"
+                />
+              )}
             </div>
 
             <div className="md:col-span-5 md:col-start-8 flex flex-col justify-center">

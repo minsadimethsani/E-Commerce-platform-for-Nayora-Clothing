@@ -16,6 +16,9 @@ export default function HeroSlideshow({ products }: HeroSlideshowProps) {
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current || slides.length <= 1) return;
+    if (typeof window !== "undefined" && (window.matchMedia("(hover: none)").matches || window.innerWidth < 768)) {
+      return;
+    }
     const { left, width } = containerRef.current.getBoundingClientRect();
     const x = e.clientX - left;
     const pct = Math.max(0, Math.min(0.999, x / width));
@@ -73,7 +76,11 @@ export default function HeroSlideshow({ products }: HeroSlideshowProps) {
     <div 
       ref={containerRef}
       className="relative w-full h-[60vh] lg:h-[75vh] overflow-hidden rounded-t-[10rem] rounded-b-[2rem] shadow-2xl group"
-      onMouseEnter={() => setIsHovered(true)}
+      onMouseEnter={() => {
+        if (typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches && window.innerWidth >= 768) {
+          setIsHovered(true);
+        }
+      }}
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setIsHovered(false)}
     >

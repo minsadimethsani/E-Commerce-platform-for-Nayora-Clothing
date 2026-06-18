@@ -106,6 +106,19 @@ export async function removeProduct(id: string | number) {
   }
 }
 
+export async function updateProduct(id: string | number, product: Partial<Omit<AdminProduct, "id">>) {
+  try {
+    const productDoc = doc(firestoreDb, "products", String(id));
+    await updateDoc(productDoc, {
+      ...product,
+      updatedAt: serverTimestamp()
+    });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    throw error;
+  }
+}
+
 // ORDERS DB
 
 export interface OrderItem {
