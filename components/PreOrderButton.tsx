@@ -134,7 +134,7 @@ export default function PreOrderButton() {
               <div className="pt-4 border-t border-espresso/10 mt-6">
                 <div className="flex justify-between text-espresso font-bold text-lg mb-6">
                   <span>Total:</span>
-                  <span>${850 * formData.quantity}</span>
+                  <span>LKR {850 * formData.quantity}</span>
                 </div>
 
                 <button 

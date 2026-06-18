@@ -109,7 +109,7 @@ export default function PaymentMethodPage() {
           <div className="border-t border-espresso/10 pt-6">
             <div className="flex justify-between text-espresso font-bold text-xl mb-8">
               <span>Total to Pay:</span>
-              <span>${pendingCheckout.totalAmount}</span>
+              <span>LKR {pendingCheckout.totalAmount}</span>
             </div>
 
             <button 

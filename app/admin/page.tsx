@@ -11,7 +11,7 @@ import Link from "next/link";
 const stats = [
   { 
     name: "Total Revenue", 
-    value: "$45,231.89", 
+    value: "LKR 45,231.89", 
     change: "+20.1%", 
     trend: "up",
     icon: DollarSign 
@@ -40,11 +40,11 @@ const stats = [
 ];
 
 const recentOrders = [
-  { id: "#ORD-001", customer: "Sarah Jenkins", product: "Silk Evening Gown", total: "$299.00", status: "Processing", date: "Today, 2:45 PM" },
-  { id: "#ORD-002", customer: "Michael Chen", product: "Classic Oxford Shirt", total: "$89.50", status: "Shipped", date: "Today, 11:20 AM" },
-  { id: "#ORD-003", customer: "Emily Davis", product: "Wool Blend Coat", total: "$195.00", status: "Delivered", date: "Yesterday, 4:15 PM" },
-  { id: "#ORD-004", customer: "James Wilson", product: "Linen Trousers", total: "$125.00", status: "Processing", date: "Yesterday, 2:30 PM" },
-  { id: "#ORD-005", customer: "Olivia Martinez", product: "Cashmere Sweater", total: "$250.00", status: "Pending", date: "Oct 24, 9:00 AM" },
+  { id: "#ORD-001", customer: "Sarah Jenkins", product: "Silk Evening Gown", total: "LKR 299.00", status: "Processing", date: "Today, 2:45 PM" },
+  { id: "#ORD-002", customer: "Michael Chen", product: "Classic Oxford Shirt", total: "LKR 89.50", status: "Shipped", date: "Today, 11:20 AM" },
+  { id: "#ORD-003", customer: "Emily Davis", product: "Wool Blend Coat", total: "LKR 195.00", status: "Delivered", date: "Yesterday, 4:15 PM" },
+  { id: "#ORD-004", customer: "James Wilson", product: "Linen Trousers", total: "LKR 125.00", status: "Processing", date: "Yesterday, 2:30 PM" },
+  { id: "#ORD-005", customer: "Olivia Martinez", product: "Cashmere Sweater", total: "LKR 250.00", status: "Pending", date: "Oct 24, 9:00 AM" },
 ];
 
 export default function AdminDashboard() {

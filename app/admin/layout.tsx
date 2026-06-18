@@ -25,6 +25,7 @@ export default async function AdminLayout({
 
   if (hasPrivilege("manage_products") || session.role === "super_admin") {
     allowedLinks.push({ href: "/admin/products", label: "Manage Products", icon: "Package" });
+    allowedLinks.push({ href: "/admin/inventory", label: "Inventory", icon: "Database" });
   }
 
   if (hasPrivilege("manage_orders") || session.role === "super_admin") {

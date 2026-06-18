@@ -50,7 +50,7 @@ export default function ProductsTable({ products }: { products: AdminProduct[] }
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-neutral-900">${product.price.toFixed(2)}</div>
+                  <div className="text-sm text-neutral-900">LKR {product.price.toFixed(2)}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-neutral-900">{product.quantity}</div>

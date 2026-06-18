@@ -1,9 +1,10 @@
-import { Product } from "@/data/cloths";
+import { Product, ProductVariant } from "@/data/cloths";
 import { db as firestoreDb } from "./firebase";
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, runTransaction } from "firebase/firestore";
 
 export interface AdminProduct extends Product {
   quantity: number;
+  variants?: ProductVariant[];
 }
 
 const ITEMS_PER_PAGE = 8;
@@ -179,6 +180,56 @@ export async function updateOrderStatus(id: string, newStatus: OrderStatus) {
     await updateDoc(orderDoc, { status: newStatus });
   } catch (error) {
     console.error("Error updating order status:", error);
+    throw error;
+  }
+}
+
+export async function updateVariantStock(productId: string, skuId: string, newStock: number) {
+  try {
+    const productRef = doc(firestoreDb, "products", productId);
+    await runTransaction(firestoreDb, async (transaction) => {
+      const productDoc = await transaction.get(productRef);
+      if (!productDoc.exists()) {
+        throw new Error("Product does not exist");
+      }
+      
+      const data = productDoc.data();
+      const variants = data.variants || [];
+      
+      // Legacy fallback: if product has no variants, update the base quantity directly
+      if (variants.length === 0) {
+        transaction.update(productRef, {
+          quantity: newStock,
+          updatedAt: serverTimestamp()
+        });
+        return;
+      }
+
+      let updated = false;
+      let newTotalQuantity = 0;
+
+      const newVariants = variants.map((v: any) => {
+        if (v.SKU_ID === skuId) {
+          updated = true;
+          newTotalQuantity += newStock;
+          return { ...v, stock_quantity: newStock };
+        }
+        newTotalQuantity += v.stock_quantity || 0;
+        return v;
+      });
+
+      if (!updated) {
+        throw new Error(`Variant with SKU ${skuId} not found in product`);
+      }
+
+      transaction.update(productRef, {
+        variants: newVariants,
+        quantity: newTotalQuantity,
+        updatedAt: serverTimestamp()
+      });
+    });
+  } catch (error) {
+    console.error("Error updating variant stock:", error);
     throw error;
   }
 }

@@ -148,7 +148,7 @@ export default function CardDetailsPage() {
             <div className="pt-6 border-t border-espresso/10 mt-8">
               <div className="flex justify-between text-espresso font-bold text-xl mb-6">
                 <span>Total to Pay:</span>
-                <span>${pendingCheckout.totalAmount}</span>
+                <span>LKR {pendingCheckout.totalAmount}</span>
               </div>
 
               <button 
@@ -162,7 +162,7 @@ export default function CardDetailsPage() {
                     Processing Payment...
                   </>
                 ) : (
-                  `Pay $${pendingCheckout.totalAmount}`
+                  `Pay LKR ${pendingCheckout.totalAmount}`
                 )}
               </button>
               

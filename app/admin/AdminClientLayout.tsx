@@ -11,7 +11,8 @@ import {
   LogOut,
   ChevronDown,
   Sun,
-  Moon
+  Moon,
+  Database
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { logoutAction } from "../auth/actions";
@@ -21,7 +22,8 @@ const iconMap: Record<string, any> = {
   LayoutDashboard,
   Package,
   ShoppingCart,
-  Users
+  Users,
+  Database
 };
 
 export default function AdminClientLayout({

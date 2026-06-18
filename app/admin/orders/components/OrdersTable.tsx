@@ -74,7 +74,7 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
                     <span className="text-sm text-neutral-900 font-medium">{order.customerName}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-neutral-900">${order.totalAmount.toFixed(2)}</span>
+                    <span className="text-sm font-medium text-neutral-900">LKR {order.totalAmount.toFixed(2)}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center text-sm text-neutral-600">
@@ -118,13 +118,13 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
                                   <span className="text-neutral-500 font-medium mr-3">{item.quantity}x</span>
                                   <span className="text-neutral-800">{item.productName}</span>
                                 </div>
-                                <span className="text-neutral-900 font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                                <span className="text-neutral-900 font-medium">LKR {(item.price * item.quantity).toFixed(2)}</span>
                               </li>
                             ))}
                           </ul>
                           <div className="mt-4 pt-4 border-t border-neutral-200 flex justify-between items-center text-sm">
                             <span className="font-medium text-neutral-900">Total</span>
-                            <span className="font-bold text-neutral-900">${order.totalAmount.toFixed(2)}</span>
+                            <span className="font-bold text-neutral-900">LKR {order.totalAmount.toFixed(2)}</span>
                           </div>
                         </div>
                         <div>

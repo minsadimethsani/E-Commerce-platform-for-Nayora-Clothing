@@ -45,7 +45,7 @@ export default async function NewArrivals() {
               Crafted from 100% recycled cashmere. This limited-edition overcoat combines timeless structure with an undeniably soft drape. Only 50 pieces produced globally.
             </p>
             <div className="flex items-center gap-6 mb-12">
-              <span className="text-2xl font-medium">$850</span>
+              <span className="text-2xl font-medium">LKR 850</span>
               <span className="text-sm uppercase tracking-widest text-espresso/50 font-bold">Low Stock</span>
             </div>
             <PreOrderButton />

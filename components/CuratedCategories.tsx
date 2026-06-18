@@ -11,7 +11,7 @@ export default async function CuratedCategories() {
     .slice(0, 3); // Display top 3 on homepage
 
   return (
-    <section className="py-24 container mx-auto">
+    <section className="pt-12 pb-16 md:pt-16 md:pb-24 container mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-end mb-16 px-4 md:px-0">
         <div>
           <span className="text-[#8C7162] uppercase tracking-[0.3em] text-xs font-bold mb-4 block">Collections</span>

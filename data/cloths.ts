@@ -1,3 +1,10 @@
+export interface ProductVariant {
+  SKU_ID: string;
+  color: string;
+  size: string | number;
+  stock_quantity: number;
+}
+
 export interface Product {
   id: string | number;
   name: string;
@@ -8,6 +15,12 @@ export interface Product {
   images?: string[];
   color?: string;
   tag?: string;
+  variants?: ProductVariant[];
+  colorImages?: Record<string, string[]>;
+}
+
+export interface ProductDocument extends Product {
+  variants: ProductVariant[];
 }
 
 export const cloths: Product[] = [

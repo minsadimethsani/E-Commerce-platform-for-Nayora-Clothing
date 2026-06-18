@@ -1,14 +1,26 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Suspense } from "react";
-import CuratedCategories from "@/components/CuratedCategories";
-import CuratedCategoriesSkeleton from "@/components/CuratedCategoriesSkeleton";
+import { getAllProducts } from "@/lib/products";
+import ProductCard from "@/components/ProductCard";
+import HeroSlideshow from "@/components/HeroSlideshow";
 
-export default function Home() {
+export default async function Home() {
+  const allProducts = await getAllProducts();
+
+  // Sort products dynamically by creation time (newest first)
+  const sortedProducts = [...allProducts].sort((a, b) => {
+    const aTime = (a as any).createdAt ? new Date((a as any).createdAt).getTime() : 0;
+    const bTime = (b as any).createdAt ? new Date((b as any).createdAt).getTime() : 0;
+    return bTime - aTime;
+  });
+
+  // Take the first 4 products as New Arrivals
+  const newArrivals = sortedProducts.slice(0, 4);
+
   return (
     <div className="flex flex-col w-full bg-[#FAF9F6] text-[#2C241E] overflow-hidden">
       {/* Editorial Hero Section */}
-      <section className="relative w-full pt-6 md:pt-16 pb-12 bg-[#FAF9F6] px-6 md:px-12 lg:px-16 overflow-hidden">
+      <section className="relative w-full pt-6 md:pt-16 pb-16 md:pb-24 bg-[#FAF9F6] px-6 md:px-12 lg:px-16 overflow-hidden">
         <div className="w-full max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
 
           {/* Content Left */}
@@ -37,18 +49,10 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Image Right */}
+          {/* Image Right - Dynamic Slideshow */}
           <div className="w-full lg:w-1/2 order-1 lg:order-2 relative">
             <div className="absolute top-0 right-0 w-full h-full bg-[#EAE5DF] rounded-t-[10rem] rounded-b-[2rem] transform translate-x-4 translate-y-4 lg:translate-x-8 lg:translate-y-8 -z-10"></div>
-            <div className="relative w-full h-[60vh] lg:h-[75vh] overflow-hidden rounded-t-[10rem] rounded-b-[2rem] shadow-2xl">
-              <Image
-                src="/hero-v2.png"
-                alt="Nayora Editorial Collection"
-                fill
-                className="object-cover object-center"
-                priority
-              />
-            </div>
+            <HeroSlideshow products={allProducts} />
           </div>
 
         </div>
@@ -56,22 +60,33 @@ export default function Home() {
 
 
       {/* Featured Statement / Manifesto */}
-      <section className="py-24 md:py-32 px-6 md:px-12 max-w-5xl mx-auto flex flex-col items-center justify-center text-center">
+
+      {/* New Arrivals Section */}
+      <section className="pt-12 pb-16 md:pt-16 md:pb-24 container mx-auto px-6 md:px-12">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 px-4 md:px-0">
+          <div>
+            <h2 className="text-4xl md:text-5xl font-serif text-[#2C241E]">New Arrivals</h2>
+          </div>
+          <Link href="/new-arrivals" className="group flex items-center gap-4 text-sm uppercase tracking-widest font-semibold text-[#2C241E] mt-6 md:mt-0">
+            <span className="border-b border-transparent group-hover:border-[#8C7162] group-hover:text-[#8C7162] transition-colors pb-1">View All Arrivals</span>
+            <span className="w-8 h-[1px] bg-[#2C241E] group-hover:w-12 group-hover:bg-[#8C7162] transition-all duration-300"></span>
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12">
+          {newArrivals.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
+      <section className="py-16 md:py-20 px-6 md:px-12 max-w-5xl mx-auto flex flex-col items-center justify-center text-center">
         <span className="text-[#8C7162] uppercase tracking-[0.3em] text-xs font-bold mb-8">Our Philosophy</span>
         <h2 className="text-3xl md:text-5xl lg:text-6xl font-serif leading-[1.3] text-[#2C241E]">
           "We believe in the power of <span className="italic text-[#8C7162]">understated elegance</span>. Every piece is a dialogue between form, fabric, and the wearer."
         </h2>
       </section>
-
-      {/* Categories */}
-      <div className="px-4 md:px-8">
-        <Suspense fallback={<CuratedCategoriesSkeleton />}>
-          <CuratedCategories />
-        </Suspense>
-      </div>
-
       {/* Brand Value Section - Asymmetrical Layout */}
-      <section className="py-24 md:py-32 bg-[#FAF9F6]">
+      <section className="py-16 md:py-24 bg-[#FAF9F6]">
         <div className="container mx-auto px-6 md:px-12">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center">
 
@@ -105,7 +120,7 @@ export default function Home() {
       </section>
 
       {/* Newsletter / Closing Section */}
-      <section className="py-24 bg-[#2C241E] text-[#FAF9F6] text-center px-6">
+      <section className="py-16 md:py-24 bg-[#2C241E] text-[#FAF9F6] text-center px-6">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-3xl md:text-5xl font-serif mb-6">Join The Inner Circle</h2>
           <p className="text-[#FAF9F6]/70 mb-10 font-light text-lg">Subscribe to receive early access to new collections, exclusive events, and editorial content.</p>

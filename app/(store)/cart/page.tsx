@@ -90,7 +90,7 @@ export default function CartPage() {
                       <Link href={`/product/${item.product.id}`} className="font-serif text-lg mb-1 hover:text-olive transition-colors">
                         {item.product.name}
                       </Link>
-                      <span className="text-sm text-espresso/70 mb-1">${item.product.price}</span>
+                      <span className="text-sm text-espresso/70 mb-1">LKR {item.product.price}</span>
                       <span className="text-xs uppercase tracking-widest font-bold text-espresso/50">Size: {item.size}</span>
                     </div>
                   </div>
@@ -114,7 +114,7 @@ export default function CartPage() {
                   </div>
 
                   <div className="col-span-1 md:col-span-2 text-left md:text-center font-medium">
-                    ${item.product.price * item.quantity}
+                    LKR {item.product.price * item.quantity}
                   </div>
 
                   <div className="col-span-1 md:col-span-2 text-left md:text-right">
@@ -137,7 +137,7 @@ export default function CartPage() {
                 <div className="space-y-4 mb-8">
                   <div className="flex justify-between text-sm">
                     <span className="text-espresso/70">Subtotal</span>
-                    <span>${cartTotal}</span>
+                    <span>LKR {cartTotal}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-espresso/70">Shipping</span>
@@ -145,7 +145,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t border-espresso/10 pt-4">
                     <span>Total</span>
-                    <span>${cartTotal}</span>
+                    <span>LKR {cartTotal}</span>
                   </div>
                 </div>
 
