@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { decrypt } from './lib/auth';
+import { auth } from './auth';
 
 const adminAccessRoles = ['super_admin', 'admin', 'employee'];
 
-export async function middleware(request: NextRequest) {
+export default auth(async function middleware(request) {
   const path = request.nextUrl.pathname;
   
   // Public assets and API routes
@@ -12,8 +11,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const sessionCookie = request.cookies.get('session')?.value;
-  const session = sessionCookie ? await decrypt(sessionCookie) : null;
+  const session = request.auth;
 
   const isAdminRoute = path.startsWith('/admin');
   const isCheckoutRoute = path.startsWith('/checkout');
@@ -21,33 +19,31 @@ export async function middleware(request: NextRequest) {
 
   // 1. Admin route protection
   if (isAdminRoute) {
-    if (!session) {
+    if (!session?.user) {
       return NextResponse.redirect(new URL('/auth/login?callbackUrl=' + encodeURIComponent(path), request.url));
     }
     
-    if (!adminAccessRoles.includes(session.role)) {
+    if (!adminAccessRoles.includes(session.user.role)) {
       return NextResponse.redirect(new URL('/', request.url));
     }
     
     // First login check
-    if (session.isFirstLogin && path !== '/admin/change-password') {
+    if (session.user.isFirstLogin && path !== '/admin/change-password') {
       return NextResponse.redirect(new URL('/admin/change-password', request.url));
     }
-    
-    // Employee privilege checks can be done inside layouts or pages for fine-grained control
   }
 
   // 2. Checkout route protection (Customer)
   if (isCheckoutRoute) {
-    if (!session) {
+    if (!session?.user) {
       return NextResponse.redirect(new URL('/auth/login?callbackUrl=' + encodeURIComponent(path), request.url));
     }
   }
 
   // 3. Auth routes (redirect to appropriate dashboard/home if already logged in)
   if (isAuthRoute) {
-    if (session) {
-      if (adminAccessRoles.includes(session.role)) {
+    if (session?.user) {
+      if (adminAccessRoles.includes(session.user.role)) {
         return NextResponse.redirect(new URL('/admin', request.url));
       } else {
         return NextResponse.redirect(new URL('/', request.url));
@@ -56,7 +52,7 @@ export async function middleware(request: NextRequest) {
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],

@@ -12,7 +12,9 @@ import {
   ChevronDown,
   Sun,
   Moon,
-  Database
+  Database,
+  ShieldCheck,
+  Tags
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { logoutAction } from "../auth/actions";
@@ -23,7 +25,9 @@ const iconMap: Record<string, any> = {
   Package,
   ShoppingCart,
   Users,
-  Database
+  Database,
+  ShieldCheck,
+  Tags
 };
 
 export default function AdminClientLayout({

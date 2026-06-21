@@ -1,5 +1,5 @@
 import { db as firestoreDb } from "./firebase";
-import { collection, getDocs, getDoc, addDoc, doc, updateDoc, query, where, serverTimestamp } from "firebase/firestore";
+import { collection, getDocs, getDoc, addDoc, doc, updateDoc, deleteDoc, query, where, serverTimestamp } from "firebase/firestore";
 
 export type UserRole = "super_admin" | "admin" | "employee" | "customer";
 
@@ -13,6 +13,7 @@ export interface User {
   isFirstLogin?: boolean;
   name?: string;
   createdAt?: any;
+  roleId?: string;
 }
 
 export async function getUserByEmail(email: string): Promise<User | null> {
@@ -64,4 +65,9 @@ export async function getAllEmployees(): Promise<User[]> {
   return snapshot.docs
     .map(doc => ({ id: doc.id, ...doc.data() } as User))
     .filter(u => u.role === 'admin' || u.role === 'employee' || u.role === 'super_admin');
+}
+
+export async function deleteUser(id: string) {
+  const userDoc = doc(firestoreDb, "users", id);
+  await deleteDoc(userDoc);
 }

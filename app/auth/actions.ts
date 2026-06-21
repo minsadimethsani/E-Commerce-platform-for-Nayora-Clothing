@@ -1,11 +1,19 @@
 "use server";
 
-import { getUserByEmail, getUserByPhone, createUser, User, updateUser } from "@/lib/user-db";
-import { hashPassword, comparePasswords, createSession, destroySession } from "@/lib/auth";
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { getUserByEmail, getUserByPhone, createUser, updateUser } from "@/lib/user-db";
+import { hashPassword } from "@/lib/auth";
+import { signIn, signOut } from "@/auth";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { AuthError } from "next-auth";
 
-export async function loginAction(prevState: any, formData: FormData) {
+export interface ActionResponse {
+  error?: string;
+  success?: boolean;
+  redirectUrl?: string;
+  message?: string;
+}
+
+export async function loginAction(prevState: ActionResponse, formData: FormData): Promise<ActionResponse> {
   try {
     const identifier = formData.get("identifier") as string;
     const password = formData.get("password") as string;
@@ -15,7 +23,7 @@ export async function loginAction(prevState: any, formData: FormData) {
       return { error: "Please enter both email/phone and password." };
     }
 
-    // Check email first, then phone
+    // Get user to determine redirection path beforehand
     let user = await getUserByEmail(identifier);
     if (!user) {
       user = await getUserByPhone(identifier);
@@ -25,37 +33,41 @@ export async function loginAction(prevState: any, formData: FormData) {
       return { error: "Invalid credentials." };
     }
 
-    const isValid = await comparePasswords(password, user.passwordHash);
-    if (!isValid) {
-      return { error: "Invalid credentials." };
+    let redirectUrl = "/";
+    if (user.isFirstLogin && (user.role === 'admin' || user.role === 'employee')) {
+      redirectUrl = "/admin/change-password";
+    } else if (user.role === 'customer') {
+      redirectUrl = callbackUrl.startsWith('/auth') ? '/' : callbackUrl;
+    } else {
+      redirectUrl = callbackUrl.startsWith('/admin') ? callbackUrl : '/admin';
     }
 
-    await createSession({
-      userId: user.id!,
-      email: user.email,
-      role: user.role,
-      privileges: user.privileges || [],
-      isFirstLogin: user.isFirstLogin
+    // Perform NextAuth sign in
+    await signIn("credentials", {
+      identifier,
+      password,
+      redirectTo: redirectUrl,
     });
 
-    if (user.isFirstLogin && (user.role === 'admin' || user.role === 'employee')) {
-      return { success: true, redirectUrl: "/admin/change-password" };
+    return { success: true, redirectUrl };
+  } catch (err: any) {
+    if (isRedirectError(err)) {
+      throw err; // bubble up redirect errors so Next.js handles navigation
     }
 
-    if (user.role === 'customer') {
-      return { success: true, redirectUrl: callbackUrl.startsWith('/auth') ? '/' : callbackUrl };
-    } else {
-      // Force admins to the dashboard unless their callback URL was ALREADY an admin page
-      const destUrl = callbackUrl.startsWith('/admin') ? callbackUrl : '/admin';
-      return { success: true, redirectUrl: destUrl };
+    if (err instanceof AuthError) {
+      if (err.type === "CredentialsSignin") {
+        return { error: "Invalid credentials." };
+      }
+      return { error: err.message || "Invalid credentials." };
     }
-  } catch (err: any) {
+
     console.error("Login action error:", err);
     return { error: err.message || "An unexpected error occurred." };
   }
 }
 
-export async function signupAction(prevState: any, formData: FormData) {
+export async function signupAction(prevState: ActionResponse, formData: FormData): Promise<ActionResponse> {
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
   const phone = formData.get("phone") as string;
@@ -95,27 +107,36 @@ export async function signupAction(prevState: any, formData: FormData) {
   });
 
   try {
-    await createSession({
-      userId: newUser.id!,
-      email: newUser.email,
-      role: newUser.role,
-      privileges: newUser.privileges || [],
-      isFirstLogin: newUser.isFirstLogin
+    // Automatically log user in using NextAuth credentials sign in
+    const redirectUrl = callbackUrl.startsWith('/auth') ? '/' : callbackUrl;
+    await signIn("credentials", {
+      identifier: newUser.email,
+      password,
+      redirectTo: redirectUrl,
     });
-
-    return { success: true, redirectUrl: callbackUrl.startsWith('/auth') ? '/' : callbackUrl };
+    return { success: true, redirectUrl };
   } catch (err: any) {
-    console.error("Signup action error:", err);
-    return { error: err.message || "An unexpected error occurred." };
+    if (isRedirectError(err)) {
+      throw err;
+    }
+    console.error("Signup auto-login error:", err);
+    return { error: "Account created successfully but auto-login failed. Please sign in manually." };
   }
 }
 
 export async function logoutAction() {
-  await destroySession();
+  try {
+    await signOut({ redirectTo: "/auth/login" });
+  } catch (err: any) {
+    if (isRedirectError(err)) {
+      throw err;
+    }
+    console.error("Logout error:", err);
+  }
   return { success: true };
 }
 
-export async function changePasswordAction(prevState: any, formData: FormData) {
+export async function changePasswordAction(prevState: ActionResponse, formData: FormData): Promise<ActionResponse> {
   try {
     const newPassword = formData.get("password") as string;
     const userId = formData.get("userId") as string;
@@ -131,24 +152,19 @@ export async function changePasswordAction(prevState: any, formData: FormData) {
       isFirstLogin: false
     });
 
-    // Also update session
-    await createSession({
-      userId,
-      email: "updated@example.com", // will be refreshed by next login, or we can fetch user
-      role: "employee", // placeholder, will just force relogin or we can fetch real
-      isFirstLogin: false
-    });
-
-    // Best practice: force them to login again or we can just update the session properly
-    await destroySession();
+    // Sign out user and force relogin
+    await signOut({ redirectTo: "/auth/login?message=Password changed successfully. Please login again." });
     return { success: true, redirectUrl: "/auth/login?message=Password changed successfully. Please login again." };
   } catch (err: any) {
+    if (isRedirectError(err)) {
+      throw err;
+    }
     console.error("Change password action error:", err);
     return { error: err.message || "An unexpected error occurred." };
   }
 }
 
-export async function forgotPasswordAction(prevState: any, formData: FormData) {
+export async function forgotPasswordAction(prevState: any, formData: FormData): Promise<ActionResponse> {
   const email = formData.get("email") as string;
   
   if (!email) {

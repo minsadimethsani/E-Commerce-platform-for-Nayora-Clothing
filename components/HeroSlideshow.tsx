@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Product } from "@/data/cloths";
 
@@ -9,126 +8,71 @@ interface HeroSlideshowProps {
 }
 
 export default function HeroSlideshow({ products }: HeroSlideshowProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const autoplayTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current || slides.length <= 1) return;
-    if (typeof window !== "undefined" && (window.matchMedia("(hover: none)").matches || window.innerWidth < 768)) {
-      return;
-    }
-    const { left, width } = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - left;
-    const pct = Math.max(0, Math.min(0.999, x / width));
-    const targetIndex = Math.floor(pct * slides.length);
-    if (targetIndex !== activeIndex) {
-      setActiveIndex(targetIndex);
-    }
-  };
-
-  // Filter products to find ones with images, showcasing up to 5 live products
+  // Filter products to find ones with images, showcasing exactly the first 4 products
   const slides = products
     .filter((p) => p.image)
-    .slice(0, 5)
+    .slice(0, 4)
     .map((p) => ({
       id: p.id,
       name: p.name,
-      category: p.category,
       image: p.image!,
-      price: p.price,
     }));
 
-  // Setup autoplay loop with pause on hover behavior
-  useEffect(() => {
-    if (slides.length <= 1) return;
-
-    if (!isHovered) {
-      autoplayTimerRef.current = setInterval(() => {
-        setActiveIndex((prev) => (prev + 1) % slides.length);
-      }, 2000);
-    }
-
-    return () => {
-      if (autoplayTimerRef.current) {
-        clearInterval(autoplayTimerRef.current);
-      }
-    };
-  }, [slides.length, isHovered]);
-
   if (slides.length === 0) {
-    // Fallback if no products are loaded yet
     return (
-      <div className="relative w-full h-[60vh] lg:h-[75vh] overflow-hidden rounded-t-[10rem] rounded-b-[2rem] shadow-2xl bg-[#EAE5DF] flex items-center justify-center">
-        <Image
-          src="/hero-v2.png"
-          alt="Nayora Editorial Collection"
-          fill
-          className="object-cover object-center"
-          priority
-        />
+      <div className="relative w-full h-[60vh] md:h-[75vh] bg-[#1e1713] flex items-center justify-center">
+        <div className="text-center text-cream px-6">
+          <h1 className="text-4xl font-serif mb-4">Nayora Clothing</h1>
+          <p className="text-lg font-light tracking-wide">Loading our latest collection...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div 
-      ref={containerRef}
-      className="relative w-full h-[60vh] lg:h-[75vh] overflow-hidden rounded-t-[10rem] rounded-b-[2rem] shadow-2xl group"
-      onMouseEnter={() => {
-        if (typeof window !== "undefined" && window.matchMedia("(hover: hover)").matches && window.innerWidth >= 768) {
-          setIsHovered(true);
-        }
-      }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Slides Container */}
-      <div className="w-full h-full relative bg-[#EAE5DF]">
+    <section className="relative w-full bg-cream py-6 md:py-10 px-4 md:px-8 overflow-hidden select-none">
+      {/* 4-column Grid layout (Responsive: 1 col on mobile, 2 on tablet, 4 on desktop) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 h-[60vh] sm:h-[65vh] lg:h-[78vh]">
         {slides.map((slide, index) => {
-          const isActive = index === activeIndex;
+          // Check if this slide is the 3rd one (index 2) to display "Redefining Modernity"
+          const isFeatured = index === 2;
+
           return (
             <div
               key={slide.id}
-              className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
-                isActive ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-              }`}
+              className="relative w-full h-full overflow-hidden rounded-xl md:rounded-2xl shadow-sm bg-[#1e1713]/5"
             >
-              {/* Blurred Background Layer to fill the frame with matching tones */}
-              <Image
-                src={slide.image}
-                alt=""
-                fill
-                sizes="10vw"
-                className="object-cover object-center blur-2xl opacity-25 scale-110 select-none pointer-events-none transition-transform duration-[6s] ease-out group-hover:scale-115"
-              />
-              
-              {/* Sharp contained foreground layer to show the full uncropped image */}
-              <Image
-                src={slide.image}
-                alt={slide.name}
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className={`object-contain object-center ${
-                  isActive ? "animate-[heroZoom_2500ms_ease-out_forwards]" : "scale-100"
-                }`}
-                priority={index === 0}
-              />
+              <div className="w-full h-full relative">
+                <Image
+                  src={slide.image}
+                  alt={slide.name}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-cover object-center w-full h-full"
+                  priority
+                />
+
+                {/* Subtly dim only the featured image to make the title overlay highly readable */}
+                {isFeatured && (
+                  <div className="absolute inset-0 bg-black/15 z-10" />
+                )}
+
+                {/* Editorial Text Overlay - "Redefining Modernity" on 3rd slide */}
+                {isFeatured && (
+                  <div className="absolute top-8 left-8 z-20 text-white flex flex-col pointer-events-none drop-shadow-md">
+                    <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] font-bold text-[#FAF9F6]/90">
+                      Redefining
+                    </span>
+                    <h2 className="font-serif italic text-4xl md:text-5xl lg:text-6xl text-white mt-1 leading-none font-light">
+                      Modernity
+                    </h2>
+                  </div>
+                )}
+              </div>
             </div>
           );
         })}
       </div>
-      <style>{`
-        @keyframes heroZoom {
-          0% {
-            transform: scale(1);
-          }
-          100% {
-            transform: scale(1.35);
-          }
-        }
-      `}</style>
-    </div>
+    </section>
   );
 }

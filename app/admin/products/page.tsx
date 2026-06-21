@@ -7,6 +7,8 @@ import ProductsTable from "./components/ProductsTable";
 import Pagination from "./components/Pagination";
 import CategoryFilter from "./components/CategoryFilter";
 
+import { getAllCategories } from "@/lib/category-db";
+
 export default async function ManageProducts({
   searchParams,
 }: {
@@ -21,6 +23,9 @@ export default async function ManageProducts({
     redirect("/admin");
   }
 
+  // Fetch categories dynamically
+  const categories = await getAllCategories();
+
   // Simulate server-side fetch with pagination and filtering
   const { items, totalPages, totalItems } = await getProducts(category, currentPage);
 
@@ -34,7 +39,7 @@ export default async function ManageProducts({
           </p>
         </div>
         <div className="mt-4 sm:mt-0 md:mr-16">
-          <AddProductModal />
+          <AddProductModal categories={categories} />
         </div>
       </div>
 
@@ -47,7 +52,7 @@ export default async function ManageProducts({
         </div>
       </div>
 
-      <ProductsTable products={items} />
+      <ProductsTable products={items} categories={categories} />
 
       {totalPages > 1 && (
         <Suspense fallback={<div className="h-10 w-full bg-neutral-100 animate-pulse rounded-md"></div>}>

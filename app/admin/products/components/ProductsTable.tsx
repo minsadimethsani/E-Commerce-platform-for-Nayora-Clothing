@@ -4,9 +4,10 @@ import { Trash2 } from "lucide-react";
 import { AdminProduct } from "@/lib/db";
 import { deleteProductAction } from "../actions";
 import { useTransition } from "react";
+import { Category } from "@/lib/category-db";
 import EditProductModal from "./EditProductModal";
 
-export default function ProductsTable({ products }: { products: AdminProduct[] }) {
+export default function ProductsTable({ products, categories }: { products: AdminProduct[]; categories: Category[] }) {
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = (id: string | number) => {
@@ -66,7 +67,7 @@ export default function ProductsTable({ products }: { products: AdminProduct[] }
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <EditProductModal product={product} />
+                  <EditProductModal product={product} categories={categories} />
                   <button 
                     onClick={() => handleDelete(product.id)}
                     className="text-red-500 hover:text-red-700 transition-colors"

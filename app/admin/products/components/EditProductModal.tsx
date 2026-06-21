@@ -6,6 +6,7 @@ import { updateProductAction } from "../actions";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { AdminProduct } from "@/lib/db";
+import { Category } from "@/lib/category-db";
 
 const initialState = {
   success: false,
@@ -15,13 +16,25 @@ const initialState = {
 
 interface EditProductModalContentProps {
   product: AdminProduct;
+  categories: Category[];
   onClose: () => void;
 }
 
-function EditProductModalContent({ product, onClose }: EditProductModalContentProps) {
+function EditProductModalContent({ product, categories, onClose }: EditProductModalContentProps) {
   // Bind product.id to the action
   const updateProductWithId = updateProductAction.bind(null, product.id);
   const [state, formAction, isPendingAction] = useActionState(updateProductWithId, initialState);
+  
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
+    const match = categories.find(
+      c => c.slug.toLowerCase() === product.category?.toLowerCase() || c.name.toLowerCase() === product.category?.toLowerCase()
+    );
+    return match ? match.slug : (categories[0]?.slug || "");
+  });
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>(product.subCategory || "");
+
+  const activeCategoryDoc = categories.find(c => c.slug === selectedCategory);
+  const availableSubCategories = activeCategoryDoc ? activeCategoryDoc.subCategories : [];
   
   const [isUploading, setIsUploading] = useState(false);
   
@@ -408,13 +421,25 @@ function EditProductModalContent({ product, onClose }: EditProductModalContentPr
                     <select
                       id="category"
                       name="category"
-                      defaultValue={product.category}
+                      value={selectedCategory}
+                      onChange={(e) => {
+                        setSelectedCategory(e.target.value);
+                        setSelectedSubCategory("");
+                      }}
                       className="bg-white text-neutral-900 mt-1 block w-full shadow-sm sm:text-sm rounded-md py-2 px-3 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-neutral-900 focus:border-neutral-900"
                     >
-                      <option value="women">Women</option>
-                      <option value="men">Men</option>
-                      <option value="accessories">Accessories</option>
-                      <option value="unisex">Unisex</option>
+                      <option value="">Select Category...</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.slug}>
+                          {c.name}
+                        </option>
+                      ))}
+                      {/* Robust handling for legacy categories not present in Firestore categories collection */}
+                      {selectedCategory && !categories.some(c => c.slug === selectedCategory) && (
+                        <option value={selectedCategory}>
+                          {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
+                        </option>
+                      )}
                     </select>
                     {state.errors?.category && <p className="mt-1 text-xs text-red-600">{state.errors.category}</p>}
                   </div>
@@ -424,18 +449,22 @@ function EditProductModalContent({ product, onClose }: EditProductModalContentPr
                     <select
                       id="subCategory"
                       name="subCategory"
-                      defaultValue={product.subCategory || ""}
+                      value={selectedSubCategory}
+                      onChange={(e) => setSelectedSubCategory(e.target.value)}
                       className="bg-white text-neutral-900 mt-1 block w-full shadow-sm sm:text-sm rounded-md py-2 px-3 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-neutral-900 focus:border-neutral-900"
                     >
                       <option value="">None / Select</option>
-                      <option value="formal">Formal</option>
-                      <option value="casual">Casual</option>
-                      <option value="loungewear">Loungewear</option>
-                      <option value="partywear">Partywear</option>
-                      <option value="bags">Bags</option>
-                      <option value="eyewear">Eyewear</option>
-                      <option value="jewelry">Jewelry</option>
-                      <option value="accents">Accents</option>
+                      {availableSubCategories.map((sub) => (
+                        <option key={sub} value={sub}>
+                          {sub.charAt(0).toUpperCase() + sub.slice(1)}
+                        </option>
+                      ))}
+                      {/* Robust handling for legacy subcategories not present in current category subcategories */}
+                      {selectedSubCategory && !availableSubCategories.includes(selectedSubCategory) && (
+                        <option value={selectedSubCategory}>
+                          {selectedSubCategory.charAt(0).toUpperCase() + selectedSubCategory.slice(1)}
+                        </option>
+                      )}
                     </select>
                   </div>
 
@@ -986,7 +1015,7 @@ function EditProductModalContent({ product, onClose }: EditProductModalContentPr
   );
 }
 
-export default function EditProductModal({ product }: { product: AdminProduct }) {
+export default function EditProductModal({ product, categories }: { product: AdminProduct; categories: Category[] }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -1000,7 +1029,7 @@ export default function EditProductModal({ product }: { product: AdminProduct })
         <span className="sr-only">Edit</span>
       </button>
 
-      {isOpen && <EditProductModalContent product={product} onClose={() => setIsOpen(false)} />}
+      {isOpen && <EditProductModalContent product={product} categories={categories} onClose={() => setIsOpen(false)} />}
     </>
   );
 }

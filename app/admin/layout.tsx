@@ -25,6 +25,10 @@ export default async function AdminLayout({
 
   if (hasPrivilege("manage_products") || session.role === "super_admin") {
     allowedLinks.push({ href: "/admin/products", label: "Manage Products", icon: "Package" });
+    allowedLinks.push({ href: "/admin/categories", label: "Category management", icon: "Tags" });
+  }
+
+  if (hasPrivilege("manage_inventory") || session.role === "super_admin") {
     allowedLinks.push({ href: "/admin/inventory", label: "Inventory", icon: "Database" });
   }
 
@@ -32,8 +36,12 @@ export default async function AdminLayout({
     allowedLinks.push({ href: "/admin/orders", label: "Manage Orders", icon: "ShoppingCart" });
   }
 
-  if (session.role === "super_admin" || session.role === "admin") {
-    allowedLinks.push({ href: "/admin/users", label: "Manage Users", icon: "Users" });
+  if (hasPrivilege("manage_users") || session.role === "super_admin") {
+    allowedLinks.push({ href: "/admin/users", label: "User management", icon: "Users" });
+  }
+
+  if (hasPrivilege("manage_roles") || session.role === "super_admin") {
+    allowedLinks.push({ href: "/admin/roles", label: "Role management", icon: "ShieldCheck" });
   }
 
   return (

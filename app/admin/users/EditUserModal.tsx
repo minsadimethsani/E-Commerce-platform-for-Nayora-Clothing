@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useState, startTransition } from "react";
-import { Plus, X, AlertCircle, CheckCircle2, Shield } from "lucide-react";
-import { createEmployeeAction } from "./actions";
-import { UserRole } from "@/lib/user-db";
+import { useActionState, useState } from "react";
+import { Edit2, X, AlertCircle, CheckCircle2 } from "lucide-react";
+import { updateUserAction } from "./actions";
+import { User, UserRole } from "@/lib/user-db";
 import { Role } from "@/lib/role-db";
 
 type State = {
@@ -18,9 +18,10 @@ const initialState: State = {
   message: "",
 };
 
-function AddUserModalContent({ onClose, currentRole, roles }: { onClose: () => void; currentRole: UserRole; roles: Role[] }) {
-  const [state, formAction, isPending] = useActionState(createEmployeeAction, initialState);
-  const [systemRole, setSystemRole] = useState<string>("custom");
+function EditUserModalContent({ onClose, user, currentRole, roles }: { onClose: () => void; user: User; currentRole: UserRole; roles: Role[] }) {
+  const action = updateUserAction.bind(null, user.id!);
+  const [state, formAction, isPending] = useActionState(action, initialState);
+  const [systemRole, setSystemRole] = useState<string>(user.role === "super_admin" ? "super_admin" : "custom");
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -37,7 +38,7 @@ function AddUserModalContent({ onClose, currentRole, roles }: { onClose: () => v
           <div className="bg-white px-4 pt-5 pb-4 sm:p-8 sm:pb-6">
             <div className="flex justify-between items-center mb-6 border-b border-neutral-100 pb-4">
               <h3 className="text-xl leading-6 font-serif text-neutral-900" id="modal-title">
-                Create New User
+                Edit User Details
               </h3>
               <button 
                 onClick={() => !isPending && onClose()}
@@ -52,16 +53,13 @@ function AddUserModalContent({ onClose, currentRole, roles }: { onClose: () => v
                 <div className="flex items-start">
                   <CheckCircle2 className="w-6 h-6 mr-3 text-green-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <h4 className="text-lg font-medium text-green-900 mb-2">User Created Successfully!</h4>
-                    <p className="text-sm text-green-800 mb-4">Please securely share this temporary password with the user. They will be required to change it upon their first login.</p>
-                    <div className="bg-white p-3 rounded border border-green-300 font-mono text-center text-lg select-all">
-                      {state.message?.split(': ')[1] || "Password generated"}
-                    </div>
+                    <h4 className="text-lg font-medium text-green-900 mb-2">User Updated Successfully!</h4>
+                    <p className="text-sm text-green-800">{state.message}</p>
                   </div>
                 </div>
                 <div className="mt-6 text-right">
                   <button onClick={onClose} className="px-4 py-2 bg-neutral-900 text-white rounded-md hover:bg-neutral-800 transition-colors">
-                    Done
+                    Close
                   </button>
                 </div>
               </div>
@@ -82,7 +80,7 @@ function AddUserModalContent({ onClose, currentRole, roles }: { onClose: () => v
                       name="name"
                       id="name"
                       required
-                      placeholder="e.g. Jane Doe"
+                      defaultValue={user.name || ""}
                       className="mt-1 block w-full bg-white border border-neutral-300 rounded-md py-2 px-3 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#8C7162] text-sm"
                     />
                   </div>
@@ -94,7 +92,7 @@ function AddUserModalContent({ onClose, currentRole, roles }: { onClose: () => v
                       name="email"
                       id="email"
                       required
-                      placeholder="e.g. jane@nayora.com"
+                      defaultValue={user.email || ""}
                       className="mt-1 block w-full bg-white border border-neutral-300 rounded-md py-2 px-3 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#8C7162] text-sm"
                     />
                   </div>
@@ -128,6 +126,7 @@ function AddUserModalContent({ onClose, currentRole, roles }: { onClose: () => v
                           id="roleId"
                           name="roleId"
                           required={systemRole === "custom"}
+                          defaultValue={user.roleId || ""}
                           className="mt-1 block w-full bg-white border border-neutral-300 rounded-md py-2.5 px-3 text-neutral-900 focus:outline-none focus:ring-2 focus:ring-[#8C7162] text-sm"
                         >
                           <option value="">Select a role...</option>
@@ -156,7 +155,7 @@ function AddUserModalContent({ onClose, currentRole, roles }: { onClose: () => v
                     disabled={isPending || (systemRole === "custom" && roles.length === 0)}
                     className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 disabled:opacity-70"
                   >
-                    {isPending ? "Creating..." : "Create User"}
+                    {isPending ? "Saving..." : "Save Changes"}
                   </button>
                 </div>
               </form>
@@ -168,22 +167,23 @@ function AddUserModalContent({ onClose, currentRole, roles }: { onClose: () => v
   );
 }
 
-export default function AddUserModal({ currentRole, roles }: { currentRole: UserRole; roles: Role[] }) {
+export default function EditUserModal({ user, currentRole, roles }: { user: User; currentRole: UserRole; roles: Role[] }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 transition-colors"
+        className="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-md transition-all cursor-pointer inline-flex items-center"
+        title="Edit User"
       >
-        <Plus className="-ml-1 mr-2 h-5 w-5" />
-        Add New User
+        <Edit2 className="w-4 h-4" />
       </button>
 
       {isOpen && (
-        <AddUserModalContent 
+        <EditUserModalContent 
           onClose={() => setIsOpen(false)} 
+          user={user} 
           currentRole={currentRole} 
           roles={roles} 
         />

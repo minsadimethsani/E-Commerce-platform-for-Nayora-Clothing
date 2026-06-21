@@ -3,13 +3,15 @@
 import { useActionState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { signupAction } from "../actions";
+import { signupAction, ActionResponse } from "../actions";
 import { AlertCircle } from "lucide-react";
 import { Suspense } from "react";
 
-const initialState = {
+const initialState: ActionResponse = {
   error: "",
 };
+
+
 
 function SignupForm() {
   const searchParams = useSearchParams();

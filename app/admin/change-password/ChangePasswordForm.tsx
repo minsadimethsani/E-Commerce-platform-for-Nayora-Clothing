@@ -1,12 +1,14 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
-import { changePasswordAction } from "@/app/auth/actions";
+import { changePasswordAction, ActionResponse } from "@/app/auth/actions";
 import { AlertCircle } from "lucide-react";
 
-const initialState = {
+const initialState: ActionResponse = {
   error: "",
 };
+
+
 
 export default function ChangePasswordForm({ userId }: { userId: string }) {
   const [state, formAction, isPending] = useActionState(changePasswordAction, initialState);

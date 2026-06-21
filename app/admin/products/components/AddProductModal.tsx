@@ -5,6 +5,7 @@ import { Plus, X, AlertCircle, CheckCircle2, UploadCloud, Trash2 } from "lucide-
 import { createProductAction } from "../actions";
 import { storage } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { Category } from "@/lib/category-db";
 
 const initialState = {
   success: false,
@@ -12,8 +13,13 @@ const initialState = {
   errors: {} as Record<string, string>,
 };
 
-function AddProductModalContent({ onClose }: { onClose: () => void }) {
+function AddProductModalContent({ onClose, categories }: { onClose: () => void; categories: Category[] }) {
   const [state, formAction, isPendingAction] = useActionState(createProductAction, initialState);
+  const [selectedCategory, setSelectedCategory] = useState<string>(categories[0]?.slug || "");
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
+
+  const activeCategoryDoc = categories.find(c => c.slug === selectedCategory);
+  const availableSubCategories = activeCategoryDoc ? activeCategoryDoc.subCategories : [];
   const [isUploading, setIsUploading] = useState(false);
   const [generalFiles, setGeneralFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -310,13 +316,19 @@ function AddProductModalContent({ onClose }: { onClose: () => void }) {
                     <select
                       id="category"
                       name="category"
-                      defaultValue="women"
+                      value={selectedCategory}
+                      onChange={(e) => {
+                        setSelectedCategory(e.target.value);
+                        setSelectedSubCategory("");
+                      }}
                       className="bg-white text-neutral-900 mt-1 block w-full shadow-sm sm:text-sm rounded-md py-2 px-3 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-neutral-900 focus:border-neutral-900"
                     >
-                      <option value="women">Women</option>
-                      <option value="men">Men</option>
-                      <option value="accessories">Accessories</option>
-                      <option value="unisex">Unisex</option>
+                      <option value="">Select Category...</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.slug}>
+                          {c.name}
+                        </option>
+                      ))}
                     </select>
                     {state.errors?.category && <p className="mt-1 text-xs text-red-600">{state.errors.category}</p>}
                   </div>
@@ -326,18 +338,16 @@ function AddProductModalContent({ onClose }: { onClose: () => void }) {
                     <select
                       id="subCategory"
                       name="subCategory"
-                      defaultValue=""
+                      value={selectedSubCategory}
+                      onChange={(e) => setSelectedSubCategory(e.target.value)}
                       className="bg-white text-neutral-900 mt-1 block w-full shadow-sm sm:text-sm rounded-md py-2 px-3 border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-neutral-900 focus:border-neutral-900"
                     >
                       <option value="">None / Select</option>
-                      <option value="formal">Formal</option>
-                      <option value="casual">Casual</option>
-                      <option value="loungewear">Loungewear</option>
-                      <option value="partywear">Partywear</option>
-                      <option value="bags">Bags</option>
-                      <option value="eyewear">Eyewear</option>
-                      <option value="jewelry">Jewelry</option>
-                      <option value="accents">Accents</option>
+                      {availableSubCategories.map((sub) => (
+                        <option key={sub} value={sub}>
+                          {sub.charAt(0).toUpperCase() + sub.slice(1)}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -858,7 +868,7 @@ function AddProductModalContent({ onClose }: { onClose: () => void }) {
   );
 }
 
-export default function AddProductModal() {
+export default function AddProductModal({ categories }: { categories: Category[] }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -871,7 +881,7 @@ export default function AddProductModal() {
         Add New Product
       </button>
 
-      {isOpen && <AddProductModalContent onClose={() => setIsOpen(false)} />}
+      {isOpen && <AddProductModalContent onClose={() => setIsOpen(false)} categories={categories} />}
     </>
   );
 }
