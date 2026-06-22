@@ -14,7 +14,7 @@ export default async function AdminLayout({
   }
 
   // Define nav links based on role and privileges
-  let allowedLinks = [
+  let allowedLinks: any[] = [
     { href: "/admin", label: "Dashboard", icon: "LayoutDashboard" },
   ];
 
@@ -36,12 +36,22 @@ export default async function AdminLayout({
     allowedLinks.push({ href: "/admin/orders", label: "Manage Orders", icon: "ShoppingCart" });
   }
 
+  // Group User & Role Management under "Users & Permissions"
+  const usersSubmenu: any[] = [];
   if (hasPrivilege("manage_users") || session.role === "super_admin") {
-    allowedLinks.push({ href: "/admin/users", label: "User management", icon: "Users" });
+    usersSubmenu.push({ href: "/admin/users", label: "User management", icon: "Users" });
   }
 
   if (hasPrivilege("manage_roles") || session.role === "super_admin") {
-    allowedLinks.push({ href: "/admin/roles", label: "Role management", icon: "ShieldCheck" });
+    usersSubmenu.push({ href: "/admin/roles", label: "Role management", icon: "ShieldCheck" });
+  }
+
+  if (usersSubmenu.length > 0) {
+    allowedLinks.push({
+      label: "Users & Permissions",
+      icon: "Users",
+      submenu: usersSubmenu
+    });
   }
 
   return (

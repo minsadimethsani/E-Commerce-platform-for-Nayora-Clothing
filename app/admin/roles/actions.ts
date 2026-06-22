@@ -20,7 +20,11 @@ export async function createRoleAction(prevState: ActionState, formData: FormDat
   }
 
   const name = formData.get("name") as string;
+  const isActive = formData.get("isActive") !== "false";
+  const isAdmin = formData.get("isAdmin") === "true";
   const permissions = formData.getAll("permissions") as string[];
+  const granularPermissionsStr = formData.get("granularPermissions") as string;
+  const granularPermissions = granularPermissionsStr ? JSON.parse(granularPermissionsStr) : undefined;
 
   if (!name) {
     return { error: "Role name is required." };
@@ -30,6 +34,9 @@ export async function createRoleAction(prevState: ActionState, formData: FormDat
     await createRole({
       name: name.trim(),
       permissions,
+      isActive,
+      isAdmin,
+      granularPermissions,
     });
 
     revalidatePath("/admin/roles");
@@ -49,7 +56,11 @@ export async function updateRoleAction(roleId: string, prevState: ActionState, f
   }
 
   const name = formData.get("name") as string;
+  const isActive = formData.get("isActive") !== "false";
+  const isAdmin = formData.get("isAdmin") === "true";
   const permissions = formData.getAll("permissions") as string[];
+  const granularPermissionsStr = formData.get("granularPermissions") as string;
+  const granularPermissions = granularPermissionsStr ? JSON.parse(granularPermissionsStr) : undefined;
 
   if (!name) {
     return { error: "Role name is required." };
@@ -59,6 +70,9 @@ export async function updateRoleAction(roleId: string, prevState: ActionState, f
     await updateRole(roleId, {
       name: name.trim(),
       permissions,
+      isActive,
+      isAdmin,
+      granularPermissions,
     });
 
     revalidatePath("/admin/roles");

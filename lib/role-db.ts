@@ -17,6 +17,15 @@ export interface Role {
   id?: string;
   name: string;
   permissions: string[]; // e.g. ["manage_products", "manage_inventory", "manage_orders", "manage_users", "manage_roles"]
+  isActive?: boolean;
+  isAdmin?: boolean;
+  granularPermissions?: Record<string, {
+    create: boolean;
+    read: boolean;
+    update: boolean;
+    delete: boolean;
+    export: boolean;
+  }>;
   createdAt?: any;
 }
 

@@ -54,58 +54,106 @@ export default function RolesList({ roles }: { roles: Role[] }) {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-neutral-100">
-              {roles.map((role) => (
-                <tr key={role.id} className={`transition-colors hover:bg-neutral-50 ${isPending ? 'opacity-70' : ''}`}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-8 w-8 rounded-full bg-[#FAF9F6] border border-[#2C241E]/10 text-[#2C241E] flex items-center justify-center font-bold">
-                        <Shield className="w-4 h-4" />
-                      </div>
-                      <span className="ml-3 font-semibold text-neutral-900">{role.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1.5">
-                      {role.permissions && role.permissions.length > 0 ? (
-                        role.permissions.map((perm) => (
+              {roles.map((role) => {
+                const renderPermissionsSummary = () => {
+                  if (role.granularPermissions) {
+                    return Object.entries(role.granularPermissions)
+                      .filter(([_, actions]) => Object.values(actions).some(val => val))
+                      .map(([moduleName, actions]) => {
+                        const activeActions = Object.entries(actions)
+                          .filter(([_, isChecked]) => isChecked)
+                          .map(([act]) => act[0].toUpperCase()) // C, R, U, D, E
+                          .join("");
+                        return (
                           <span
-                            key={perm}
-                            className="px-2.5 py-1 bg-neutral-100 border border-neutral-200 text-neutral-700 text-xs font-medium rounded-md capitalize"
+                            key={moduleName}
+                            className="px-2.5 py-1.5 bg-neutral-50 border border-neutral-200 text-neutral-700 text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 capitalize"
                           >
-                            {perm.replace("manage_", "").replace("_", " ")}
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                            {moduleName}: <span className="font-mono text-[10px] text-neutral-500">({activeActions})</span>
                           </span>
-                        ))
-                      ) : (
-                        <span className="text-neutral-400 italic text-xs">No permissions configured</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end gap-3">
-                      <RoleModal
-                        role={role}
-                        trigger={
-                          <button
-                            type="button"
-                            className="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-md transition-all cursor-pointer"
-                            title="Edit Role"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                        }
-                      />
-                      <button
-                        onClick={() => role.id && handleDelete(role.id, role.name)}
-                        className="p-2 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-md transition-all cursor-pointer"
-                        disabled={isPending}
-                        title="Delete Role"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        );
+                      });
+                  }
+
+                  // Fallback: render legacy permissions
+                  if (role.permissions && role.permissions.length > 0) {
+                    return role.permissions
+                      .filter(perm => !perm.includes(":"))
+                      .map((perm) => (
+                        <span
+                          key={perm}
+                          className="px-2.5 py-1.5 bg-neutral-50 border border-neutral-200 text-neutral-700 text-xs font-semibold rounded-lg shadow-xs flex items-center gap-1.5 capitalize"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                          {perm.replace("manage_", "").replace("_", " ")}
+                        </span>
+                      ));
+                  }
+
+                  return <span className="text-neutral-400 italic text-xs">No permissions configured</span>;
+                };
+
+                return (
+                  <tr key={role.id} className={`transition-colors hover:bg-neutral-50 ${isPending ? 'opacity-70' : ''}`}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="h-8 w-8 rounded-full bg-[#FAF9F6] border border-[#2C241E]/10 text-[#2C241E] flex items-center justify-center font-bold flex-shrink-0">
+                          <Shield className="w-4 h-4" />
+                        </div>
+                        <div className="ml-3 flex flex-col sm:flex-row sm:items-center gap-2">
+                          <span className="font-bold text-neutral-900">{role.name}</span>
+                          <div className="flex gap-1.5 flex-wrap">
+                            {role.isAdmin && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                                Admin Access
+                              </span>
+                            )}
+                            {role.isActive !== false ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-250">
+                                Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-neutral-100 text-neutral-500 border border-neutral-200">
+                                Inactive
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-wrap gap-1.5 max-w-xl">
+                        {renderPermissionsSummary()}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end gap-3">
+                        <RoleModal
+                          role={role}
+                          trigger={
+                            <button
+                              type="button"
+                              className="p-2 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 rounded-md transition-all cursor-pointer"
+                              title="Edit Role"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                          }
+                        />
+                        <button
+                          onClick={() => role.id && handleDelete(role.id, role.name)}
+                          className="p-2 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-md transition-all cursor-pointer"
+                          disabled={isPending}
+                          title="Delete Role"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

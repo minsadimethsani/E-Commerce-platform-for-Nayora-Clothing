@@ -37,12 +37,19 @@ export default function AdminClientLayout({
 }: {
   children: React.ReactNode;
   session: SessionPayload;
-  navLinks: { href: string, label: string, icon: string }[];
+  navLinks: { href?: string, label: string, icon: string, submenu?: { href: string, label: string, icon: string }[] }[];
 }) {
   const pathname = usePathname();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isUsersOpen, setIsUsersOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (pathname.startsWith("/admin/users") || pathname.startsWith("/admin/roles")) {
+      setIsUsersOpen(true);
+    }
+  }, [pathname]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("admin-theme");
@@ -89,14 +96,62 @@ export default function AdminClientLayout({
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 mt-6 space-y-1">
+        <nav className="flex-1 px-4 mt-6 space-y-1 overflow-y-auto">
           {navLinks.map((link) => {
+            if (link.submenu) {
+              const Icon = iconMap[link.icon] || Users;
+              const hasActiveSub = link.submenu.some((sub: any) => pathname === sub.href);
+              
+              return (
+                <div key={link.label} className="space-y-1">
+                  <button
+                    onClick={() => setIsUsersOpen(!isUsersOpen)}
+                    type="button"
+                    className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors cursor-pointer focus:outline-none ${
+                      hasActiveSub
+                        ? "bg-neutral-100 text-neutral-900"
+                        : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <Icon className={`w-5 h-5 mr-3 ${hasActiveSub ? "text-neutral-950" : "text-neutral-400"}`} />
+                      {link.label}
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${isUsersOpen ? 'rotate-180' : ''}`} />
+                  </button>
+                  
+                  {isUsersOpen && (
+                    <div className="pl-6 space-y-1 mt-1 animate-in slide-in-from-top-1 duration-150">
+                      {link.submenu.map((sub: any) => {
+                        const isSubActive = pathname === sub.href;
+                        const SubIcon = iconMap[sub.icon];
+                        return (
+                          <Link
+                            key={sub.href}
+                            href={sub.href}
+                            className={`flex items-center px-4 py-2 text-xs font-semibold rounded-md transition-colors ${
+                              isSubActive
+                                ? "bg-neutral-900 text-white shadow-sm"
+                                : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"
+                            }`}
+                          >
+                            {SubIcon && <SubIcon className={`w-4 h-4 mr-2.5 ${isSubActive ? "text-white" : "text-neutral-400"}`} />}
+                            {sub.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             const isActive = pathname === link.href;
             const Icon = iconMap[link.icon];
             return (
               <Link
                 key={link.href}
-                href={link.href}
+                href={link.href!}
                 className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                   isActive
                     ? "bg-neutral-900 text-white"
