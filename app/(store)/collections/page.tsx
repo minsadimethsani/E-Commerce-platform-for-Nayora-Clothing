@@ -140,7 +140,7 @@ function CollectionsContent() {
                 <li key={cat}>
                   <button 
                     onClick={() => handleCategoryChange(cat)}
-                    className={`text-sm tracking-wide transition-all duration-300 ${activeCategory === cat ? 'font-bold text-espresso translate-x-2' : 'text-espresso/60 hover:text-espresso hover:translate-x-1'}`}
+                    className={`text-sm tracking-wide transition-all duration-300 ${activeCategory.toLowerCase() === cat.toLowerCase() ? 'font-bold text-espresso translate-x-2' : 'text-espresso/60 hover:text-espresso hover:translate-x-1'}`}
                   >
                     {cat}
                   </button>

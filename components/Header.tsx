@@ -140,6 +140,14 @@ export default function Header({
       }
     }
     
+    // Fallback: Use first available in-stock product image if no non-hero image is found
+    if (inStockProducts.length > 0 && inStockProducts[0].image) {
+      return {
+        image: inStockProducts[0].image,
+        caption: inStockProducts[0].name
+      };
+    }
+    
     return {
       image: activeCategoryObj.heroImage || "/hero.png",
       caption: activeCategoryObj.description || activeCategoryObj.title || activeCategoryObj.name
