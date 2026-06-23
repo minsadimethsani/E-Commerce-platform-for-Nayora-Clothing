@@ -2,17 +2,21 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { Category } from "@/lib/category-db";
 
-function CategoryFilterContent({ currentCategory }: { currentCategory: string }) {
+function CategoryFilterContent({ 
+  currentCategory, 
+  categories = [] 
+}: { 
+  currentCategory: string; 
+  categories?: Category[]; 
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const categories = [
+  const options = [
     { id: "all", label: "All Products" },
-    { id: "women", label: "Women" },
-    { id: "men", label: "Men" },
-    { id: "accessories", label: "Accessories" },
-    { id: "unisex", label: "Unisex" },
+    ...categories.map((c) => ({ id: c.slug, label: c.name })),
   ];
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -33,7 +37,7 @@ function CategoryFilterContent({ currentCategory }: { currentCategory: string })
         onChange={handleCategoryChange}
         className="block w-40 pl-3 pr-10 py-2 text-base border-neutral-300 focus:outline-none focus:ring-neutral-500 focus:border-neutral-500 sm:text-sm rounded-md border"
       >
-        {categories.map((c) => (
+        {options.map((c) => (
           <option key={c.id} value={c.id}>
             {c.label}
           </option>
@@ -43,10 +47,16 @@ function CategoryFilterContent({ currentCategory }: { currentCategory: string })
   );
 }
 
-export default function CategoryFilter({ currentCategory }: { currentCategory: string }) {
+export default function CategoryFilter({ 
+  currentCategory, 
+  categories = [] 
+}: { 
+  currentCategory: string; 
+  categories?: Category[]; 
+}) {
   return (
     <Suspense fallback={<div className="h-10 w-40 bg-neutral-100 animate-pulse rounded-md"></div>}>
-      <CategoryFilterContent currentCategory={currentCategory} />
+      <CategoryFilterContent currentCategory={currentCategory} categories={categories} />
     </Suspense>
   );
 }

@@ -1,10 +1,13 @@
 import { Product, ProductVariant } from "@/data/cloths";
 import { db as firestoreDb } from "./firebase";
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, runTransaction } from "firebase/firestore";
+import { collection, getDocs, getDoc, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, runTransaction } from "firebase/firestore";
 
 export interface AdminProduct extends Product {
   quantity: number;
   variants?: ProductVariant[];
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 const ITEMS_PER_PAGE = 8;
@@ -244,6 +247,20 @@ export async function updateVariantStock(productId: string, skuId: string, newSt
   } catch (error) {
     console.error("Error updating variant stock:", error);
     throw error;
+  }
+}
+
+export async function getAdminProductById(id: string): Promise<AdminProduct | undefined> {
+  try {
+    const docRef = doc(firestoreDb, "products", id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...serializeData(docSnap.data()) } as AdminProduct;
+    }
+    return undefined;
+  } catch (error) {
+    console.error("Error fetching admin product by ID:", error);
+    return undefined;
   }
 }
 

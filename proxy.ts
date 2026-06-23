@@ -3,7 +3,7 @@ import { auth } from './auth';
 
 const adminAccessRoles = ['super_admin', 'admin', 'employee'];
 
-export default auth(async function middleware(request) {
+export default auth(async function proxy(request) {
   const path = request.nextUrl.pathname;
   
   // Public assets and API routes

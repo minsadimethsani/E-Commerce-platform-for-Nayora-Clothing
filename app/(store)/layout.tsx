@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import { CartProvider } from "@/context/CartContext";
 import { getSession } from "@/lib/auth";
 import { getAllProducts } from "@/lib/products";
+import { getAllCategories } from "@/lib/category-db";
 
 export default async function StoreLayout({
   children,
@@ -11,10 +12,12 @@ export default async function StoreLayout({
 }>) {
   const session = await getSession();
   const products = await getAllProducts();
+  const categories = await getAllCategories();
+  const activeCategories = categories.filter(c => c.isActive);
 
   return (
     <CartProvider>
-      <Header session={session} products={products} />
+      <Header session={session} products={products} categories={activeCategories} />
       <main className="flex-1 flex flex-col">
         {children}
       </main>
@@ -22,3 +25,4 @@ export default async function StoreLayout({
     </CartProvider>
   );
 }
+

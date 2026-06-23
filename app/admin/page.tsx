@@ -107,9 +107,9 @@ export default async function AdminDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="flex flex-col gap-8">
         {/* Recent Orders Table */}
-        <div className="bg-white border border-neutral-100 rounded-xl shadow-sm overflow-hidden lg:col-span-7">
+        <div className="bg-white border border-neutral-100 rounded-xl shadow-sm overflow-hidden w-full">
           <div className="px-6 py-5 border-b border-neutral-100 flex items-center justify-between">
             <h3 className="text-lg font-medium leading-6 text-neutral-900">Recent Orders</h3>
             <Link href="/admin/orders" className="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">
@@ -154,7 +154,7 @@ export default async function AdminDashboard() {
         </div>
 
         {/* Newsletter Subscribers details section */}
-        <div className="bg-white border border-neutral-100 rounded-xl shadow-sm overflow-hidden lg:col-span-5 flex flex-col">
+        <div className="bg-white border border-neutral-100 rounded-xl shadow-sm overflow-hidden w-full flex flex-col">
           <div className="px-6 py-5 border-b border-neutral-100 flex items-center justify-between">
             <h3 className="text-lg font-medium leading-6 text-neutral-900">Newsletter Subscribers</h3>
             <span className="text-xs font-semibold px-2.5 py-1 bg-neutral-50 text-neutral-600 rounded-full border border-neutral-200">

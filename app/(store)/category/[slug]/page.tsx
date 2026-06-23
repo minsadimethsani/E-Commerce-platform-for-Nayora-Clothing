@@ -13,11 +13,15 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   const categoryDocRef = doc(db, "categories", slug.toLowerCase());
   const categorySnap = await getDoc(categoryDocRef);
 
-  if (!categorySnap.exists() || !categorySnap.data().isActive) {
+  if (!categorySnap.exists() || categorySnap.data().isActive === false) {
     notFound();
   }
 
   const meta = categorySnap.data();
+  const title = meta.title || meta.name || (slug.charAt(0).toUpperCase() + slug.slice(1));
+  const description = meta.description || `Curated pieces from our ${title} collection.`;
+  const heroImage = meta.heroImage || "/hero.png";
+  const subCategories: string[] = meta.subCategories || [];
 
   // Fetch all products and filter for this category (and include unisex items for apparel)
   const allProducts = await getAllProducts();
@@ -32,8 +36,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       <section className="relative w-full pt-6 md:pt-16 pb-8 bg-cream px-4 md:px-8">
         <div className="w-full max-w-7xl h-[50vh] md:h-[60vh] mx-auto relative overflow-hidden rounded-2xl md:rounded-[2rem] shadow-xl flex items-center justify-center bg-espresso">
           <Image 
-            src={meta.heroImage} 
-            alt={meta.title} 
+            src={heroImage} 
+            alt={title} 
             fill 
             className="object-cover object-center opacity-70"
             priority
@@ -45,35 +49,31 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
               The Collection
             </span>
             <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4 text-cream tracking-tight drop-shadow-md">
-              {meta.title}
+              {title}
             </h1>
             <p className="text-base md:text-lg text-cream/90 font-light leading-relaxed drop-shadow-md max-w-xl mx-auto">
-              {meta.description}
+              {description}
             </p>
           </div>
         </div>
       </section>
 
       {/* Subcategory Navigation */}
-      <section className="bg-espresso/5 border-b border-espresso/10 py-5">
-        <div className="container mx-auto px-6 flex flex-wrap justify-center gap-8 md:gap-16 text-xs font-bold uppercase tracking-[0.2em] text-espresso/60">
-          {slug.toLowerCase() === 'accessories' ? (
-            <>
-              <Link href={`/category/${slug}/bags`} className="hover:text-espresso transition-colors">Bags</Link>
-              <Link href={`/category/${slug}/eyewear`} className="hover:text-espresso transition-colors">Eyewear</Link>
-              <Link href={`/category/${slug}/jewelry`} className="hover:text-espresso transition-colors">Jewelry</Link>
-              <Link href={`/category/${slug}/accents`} className="hover:text-espresso transition-colors">Accents</Link>
-            </>
-          ) : (
-            <>
-              <Link href={`/category/${slug}/formal`} className="hover:text-espresso transition-colors">Formal</Link>
-              <Link href={`/category/${slug}/casual`} className="hover:text-espresso transition-colors">Casual</Link>
-              <Link href={`/category/${slug}/loungewear`} className="hover:text-espresso transition-colors">Loungewear</Link>
-              <Link href={`/category/${slug}/partywear`} className="hover:text-espresso transition-colors">Partywear</Link>
-            </>
-          )}
-        </div>
-      </section>
+      {subCategories.length > 0 && (
+        <section className="bg-espresso/5 border-b border-espresso/10 py-5">
+          <div className="container mx-auto px-6 flex flex-wrap justify-center gap-8 md:gap-16 text-xs font-bold uppercase tracking-[0.2em] text-espresso/60">
+            {subCategories.map((sub) => (
+              <Link 
+                key={sub} 
+                href={`/category/${slug}/${sub}`} 
+                className="hover:text-espresso transition-colors capitalize"
+              >
+                {sub}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Product Grid Section */}
       <section className="container mx-auto px-4 md:px-8 py-16">

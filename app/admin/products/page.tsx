@@ -45,7 +45,7 @@ export default async function ManageProducts({
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white p-4 rounded-xl shadow-sm border border-neutral-100">
         <Suspense fallback={<div className="h-10 w-32 bg-neutral-100 animate-pulse rounded-md"></div>}>
-          <CategoryFilter currentCategory={category} />
+          <CategoryFilter currentCategory={category} categories={categories} />
         </Suspense>
         <div className="mt-4 sm:mt-0 text-sm text-neutral-500 font-medium">
           Showing <span className="text-neutral-900">{items.length}</span> of <span className="text-neutral-900">{totalItems}</span> products

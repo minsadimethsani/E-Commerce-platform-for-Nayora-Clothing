@@ -8,12 +8,30 @@ import ProductCard from "@/components/ProductCard";
 import ProductCardSkeleton from "@/components/ProductCardSkeleton";
 import { Product } from "@/data/cloths";
 
-const categories = ["All", "Women", "Men", "Accessories", "Unisex"];
 const ITEMS_PER_PAGE = 9;
 
 function CollectionsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Dynamic categories state
+  const [categories, setCategories] = useState<string[]>(["All"]);
+
+  useEffect(() => {
+    async function loadCategories() {
+      try {
+        const res = await fetch("/api/categories");
+        if (res.ok) {
+          const data = await res.json();
+          const names = data.map((c: any) => c.name);
+          setCategories(["All", ...names]);
+        }
+      } catch (err) {
+        console.error("Failed to load categories for collections", err);
+      }
+    }
+    loadCategories();
+  }, []);
 
   // Read initial state from URL or use defaults
   const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "All");

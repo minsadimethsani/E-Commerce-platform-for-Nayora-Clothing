@@ -9,181 +9,23 @@ import { logoutAction } from '@/app/auth/actions';
 import Image from 'next/image';
 import { Product } from '@/data/cloths';
 
+import { Category } from '@/lib/category-db';
+
 interface MegamenuColumn {
   title: string;
   links: { label: string; href: string }[];
 }
 
-interface MegamenuItem {
-  image: string;
-  imageAlt: string;
-  imageCaption: string;
-  columns: MegamenuColumn[];
-}
-
-const MEGAMENU_DATA: Record<string, MegamenuItem> = {
-  women: {
-    image: "/women.png",
-    imageAlt: "Women's Collection",
-    imageCaption: "Sophisticated Silhouettes",
-    columns: [
-      {
-        title: "APPAREL",
-        links: [
-          { label: "DRESSES", href: "/category/women/partywear" },
-          { label: "TOP & BLOUSE", href: "/search?q=blouse" },
-          { label: "CROP TOPS", href: "/search?q=crop+top" },
-          { label: "SKIRTS", href: "/category/women/casual" },
-          { label: "BLAZERS", href: "/search?q=blazer" },
-        ]
-      },
-      {
-        title: "COLLECTIONS",
-        links: [
-          { label: "CASUAL EDIT", href: "/category/women/casual" },
-          { label: "FORMAL EDIT", href: "/category/women/formal" },
-          { label: "PARTYWEAR", href: "/category/women/partywear" },
-          { label: "LOUNGEWEAR", href: "/category/women/loungewear" },
-        ]
-      },
-      {
-        title: "ACCESSORIES",
-        links: [
-          { label: "HAND BAGS", href: "/category/accessories/bags" },
-          { label: "JEWELLERY", href: "/category/accessories/jewelry" },
-          { label: "EYEWEAR", href: "/category/accessories/eyewear" },
-          { label: "ACCENTS", href: "/category/accessories/accents" },
-        ]
-      }
-    ]
-  },
-  men: {
-    image: "/men.png",
-    imageAlt: "Men's Collection",
-    imageCaption: "Tailored Essentials",
-    columns: [
-      {
-        title: "APPAREL",
-        links: [
-          { label: "SUITS & BLAZERS", href: "/search?q=blazer" },
-          { label: "TROUSERS", href: "/search?q=trousers" },
-          { label: "KNITWEAR & SWEATERS", href: "/search?q=sweater" },
-          { label: "SHIRTS & TEES", href: "/search?q=tee" },
-        ]
-      },
-      {
-        title: "COLLECTIONS",
-        links: [
-          { label: "CASUAL EDIT", href: "/category/men/casual" },
-          { label: "FORMAL EDIT", href: "/category/men/formal" },
-          { label: "LOUNGEWEAR", href: "/category/men/loungewear" },
-        ]
-      },
-      {
-        title: "ACCESSORIES",
-        links: [
-          { label: "BAGS", href: "/category/accessories/bags" },
-          { label: "EYEWEAR", href: "/category/accessories/eyewear" },
-          { label: "FOOTWEAR", href: "/search?q=boots" },
-        ]
-      }
-    ]
-  },
-  accessories: {
-    image: "/accessories.png",
-    imageAlt: "Accessories Collection",
-    imageCaption: "Timeless Accents",
-    columns: [
-      {
-        title: "LEATHER GOODS",
-        links: [
-          { label: "TOTE BAGS", href: "/search?q=tote" },
-          { label: "SATCHELS", href: "/search?q=satchel" },
-          { label: "HAND BAGS", href: "/category/accessories/bags" },
-        ]
-      },
-      {
-        title: "ACCENTS & JEWELRY",
-        links: [
-          { label: "FINE JEWELLERY", href: "/category/accessories/jewelry" },
-          { label: "GOLD NECKLACES", href: "/search?q=necklace" },
-          { label: "SILK SCARVES", href: "/search?q=scarf" },
-        ]
-      },
-      {
-        title: "LIFESTYLE",
-        links: [
-          { label: "EYEWEAR", href: "/category/accessories/eyewear" },
-          { label: "SUNGLASSES", href: "/search?q=sunglasses" },
-          { label: "BOOTS & FOOTWEAR", href: "/search?q=boots" },
-        ]
-      }
-    ]
-  }
-};
-
-const NAV_ITEMS = [
-  { label: "HOME", href: "/" },
-  { label: "SHOP", href: "/collections" },
-  { label: "WOMEN", href: "/category/women", hasMegamenu: true, key: "women" },
-  { label: "MEN", href: "/category/men", hasMegamenu: true, key: "men" },
-  { label: "ACCESSORIES", href: "/category/accessories", hasMegamenu: true, key: "accessories" },
-  { label: "NEW ARRIVALS", href: "/new-arrivals" },
-  { label: "OUR STORY", href: "/about" },
-];
-
-interface MegamenuImageResult {
-  image: string;
-  caption: string;
-}
-
-function getMegamenuImageForCategory(
-  category: string,
-  products: Product[],
-  heroImageUrls: string[],
-  defaultImage: string
-): MegamenuImageResult {
-  const categoryProducts = products.filter(
-    (p) => String(p.category).toLowerCase() === category.toLowerCase()
-  );
-
-  const inStockProducts = categoryProducts.filter((p) => {
-    return ((p as any).quantity > 0 || (p.variants && p.variants.some((v: any) => v.stock_quantity > 0)));
-  });
-
-  for (const product of inStockProducts) {
-    const allProductImages = [product.image, ...(product.images || [])].filter(Boolean);
-    const nonHeroImage = allProductImages.find((img) => !heroImageUrls.includes(img));
-    if (nonHeroImage) {
-      return {
-        image: nonHeroImage,
-        caption: product.name,
-      };
-    }
-  }
-
-  return {
-    image: defaultImage,
-    caption: category === "women" ? "Sophisticated Silhouettes" : category === "men" ? "Tailored Essentials" : "Timeless Accents",
-  };
-}
-
-export default function Header({ session, products = [] }: { session: any; products?: Product[] }) {
+export default function Header({ 
+  session, 
+  products = [], 
+  categories = [] 
+}: { 
+  session: any; 
+  products?: Product[]; 
+  categories?: Category[]; 
+}) {
   const pathname = usePathname();
-  
-  // Identify hero slideshow images to exclude them
-  const heroImageUrls = useMemo(() => {
-    return products.filter((p) => p.image).slice(0, 5).map(p => p.image);
-  }, [products]);
-
-  // Dynamically determine megamenu images and captions
-  const megamenuImages = useMemo(() => {
-    return {
-      women: getMegamenuImageForCategory("women", products, heroImageUrls, "/women.png"),
-      men: getMegamenuImageForCategory("men", products, heroImageUrls, "/men.png"),
-      accessories: getMegamenuImageForCategory("accessories", products, heroImageUrls, "/accessories.png"),
-    };
-  }, [products, heroImageUrls]);
   const router = useRouter();
   const { cartCount } = useCart();
   
@@ -200,6 +42,109 @@ export default function Header({ session, products = [] }: { session: any; produ
   const [isMegamenuHovered, setIsMegamenuHovered] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Identify hero slideshow images to exclude them
+  const heroImageUrls = useMemo(() => {
+    return products.filter((p) => p.image).slice(0, 5).map(p => p.image);
+  }, [products]);
+
+  const navItems = useMemo(() => {
+    const items: { label: string; href: string; hasMegamenu?: boolean; key?: string }[] = [
+      { label: "HOME", href: "/" },
+      { label: "SHOP", href: "/collections" },
+    ];
+    
+    // Sort categories based on preferred order: Women, Men, Unisex, Accessories
+    const preferredOrder = ["women", "men", "unisex", "accessories"];
+    const sortedCategories = [...categories].sort((a, b) => {
+      const indexA = preferredOrder.indexOf(a.slug.toLowerCase());
+      const indexB = preferredOrder.indexOf(b.slug.toLowerCase());
+      
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      
+      return a.name.localeCompare(b.name);
+    });
+
+    sortedCategories.forEach(cat => {
+      const hasMegamenu = cat.subCategories && cat.subCategories.length > 0;
+      items.push({
+        label: cat.name.toUpperCase(),
+        href: `/category/${cat.slug}`,
+        hasMegamenu: hasMegamenu,
+        key: cat.slug
+      });
+    });
+    
+    items.push(
+      { label: "OUR STORY", href: "/about" }
+    );
+    
+    return items;
+  }, [categories]);
+
+  const activeCategoryObj = useMemo(() => {
+    if (!activeCategory) return null;
+    return categories.find(c => c.slug === activeCategory) || null;
+  }, [activeCategory, categories]);
+
+  const activeMegamenuColumns = useMemo(() => {
+    if (!activeCategoryObj) return [];
+    
+    const columns = [];
+    
+    if (activeCategoryObj.subCategories && activeCategoryObj.subCategories.length > 0) {
+      columns.push({
+        title: "EXPLORE",
+        links: activeCategoryObj.subCategories.map(sub => ({
+          label: sub.toUpperCase(),
+          href: `/category/${activeCategoryObj.slug}/${sub}`
+        }))
+      });
+    }
+    
+    columns.push({
+      title: "COLLECTIONS",
+      links: [
+        { label: `SHOP ALL ${activeCategoryObj.name.toUpperCase()}`, href: `/category/${activeCategoryObj.slug}` },
+        { label: "NEW ARRIVALS", href: `/collections?category=${activeCategoryObj.name}` },
+        { label: "BEST SELLERS", href: `/collections?category=${activeCategoryObj.name}&sort=Featured` }
+      ]
+    });
+    
+    return columns;
+  }, [activeCategoryObj]);
+
+  const activeMegamenuImage = useMemo(() => {
+    if (!activeCategoryObj) return null;
+    
+    const categoryProducts = products.filter(
+      (p) => String(p.category).toLowerCase() === activeCategoryObj.slug.toLowerCase()
+    );
+    
+    const inStockProducts = categoryProducts.filter((p) => {
+      return ((p as any).quantity > 0 || (p.variants && p.variants.some((v: any) => v.stock_quantity > 0)));
+    });
+    
+    for (const product of inStockProducts) {
+      const allProductImages = [product.image, ...(product.images || [])].filter(Boolean);
+      const nonHeroImage = allProductImages.find((img) => !heroImageUrls.includes(img));
+      if (nonHeroImage) {
+        return {
+          image: nonHeroImage,
+          caption: product.name,
+        };
+      }
+    }
+    
+    return {
+      image: activeCategoryObj.heroImage || "/hero.png",
+      caption: activeCategoryObj.description || activeCategoryObj.title || activeCategoryObj.name
+    };
+  }, [activeCategoryObj, products, heroImageUrls]);
 
   const handleMouseEnter = (key: string) => {
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
@@ -263,7 +208,7 @@ export default function Header({ session, products = [] }: { session: any; produ
 
         {/* Center: Navigation Links */}
         <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-[12px] font-semibold uppercase tracking-[0.18em]">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const isHovered = activeCategory === item.key;
             const isActive = pathname === item.href || (item.key && pathname.startsWith(`/category/${item.key}`));
             return (
@@ -382,18 +327,18 @@ export default function Header({ session, products = [] }: { session: any; produ
           onMouseEnter={handleMegamenuMouseEnter}
           onMouseLeave={handleMegamenuMouseLeave}
           className={`absolute top-[calc(100%+0.75rem)] left-0 right-0 mx-auto w-full max-w-5xl bg-cream/95 backdrop-blur-md border border-espresso/15 rounded-3xl shadow-xl overflow-hidden transition-all duration-300 transform origin-top z-50 pointer-events-auto ${
-            isMegamenuHovered && activeCategory && MEGAMENU_DATA[activeCategory]
+            isMegamenuHovered && activeCategoryObj
               ? "opacity-100 scale-100 translate-y-0 visible" 
               : "opacity-0 scale-95 -translate-y-2 invisible pointer-events-none"
           }`}
         >
-          {activeCategory && MEGAMENU_DATA[activeCategory] && (
+          {activeCategoryObj && (
             <div className="flex gap-8 p-8 text-espresso">
               {/* Left Column: Featured Image */}
               <div className="w-[280px] shrink-0 relative aspect-[3/4] rounded-2xl overflow-hidden shadow-md group">
                 <Image 
-                  src={megamenuImages[activeCategory as keyof typeof megamenuImages]?.image || MEGAMENU_DATA[activeCategory].image} 
-                  alt={MEGAMENU_DATA[activeCategory].imageAlt} 
+                  src={activeMegamenuImage?.image || "/hero.png"} 
+                  alt={activeCategoryObj.title || activeCategoryObj.name} 
                   fill
                   sizes="280px"
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -402,14 +347,14 @@ export default function Header({ session, products = [] }: { session: any; produ
                 <div className="absolute inset-0 bg-gradient-to-t from-espresso/70 via-espresso/10 to-transparent flex flex-col justify-end p-5">
                   <span className="text-[10px] text-cream/70 font-semibold tracking-[0.2em] uppercase mb-1">Featured</span>
                   <span className="text-cream text-lg font-serif font-semibold tracking-wide leading-tight">
-                    {megamenuImages[activeCategory as keyof typeof megamenuImages]?.caption || MEGAMENU_DATA[activeCategory].imageCaption}
+                    {activeMegamenuImage?.caption || activeCategoryObj.title}
                   </span>
                 </div>
               </div>
 
-              {/* Right Column: Detailed 3-Column Subcategories List */}
+              {/* Right Column: Detailed Columns Subcategories List */}
               <div className="flex-1 grid grid-cols-3 gap-8 pt-2">
-                {MEGAMENU_DATA[activeCategory].columns.map((column, colIdx) => (
+                {activeMegamenuColumns.map((column, colIdx) => (
                   <div key={colIdx} className="flex flex-col gap-4">
                     <h4 className="text-[11px] font-bold text-espresso tracking-[0.2em] uppercase border-b border-espresso/10 pb-2">
                       {column.title}
