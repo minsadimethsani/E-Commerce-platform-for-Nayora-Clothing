@@ -102,6 +102,8 @@ function RoleModalContent({ onClose, role }: { onClose: () => void; role?: Role 
     permissions: getInitialPermissions(role),
   });
 
+  const isRoleNameBlank = !formState.roleName.trim();
+
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormState(prev => ({ ...prev, roleName: e.target.value }));
   };
@@ -244,15 +246,17 @@ function RoleModalContent({ onClose, role }: { onClose: () => void; role?: Role 
               {/* Role Name */}
               <div>
                 <label htmlFor="roleName" className="block text-sm font-semibold text-neutral-800 mb-1.5">Role Name</label>
-                <input
-                  type="text"
-                  id="roleName"
-                  required
-                  value={formState.roleName}
-                  onChange={handleNameChange}
-                  placeholder="Editor"
-                  className="block w-full bg-white border border-neutral-300 rounded-xl py-2.5 px-4 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent text-sm font-sans transition-all"
-                />
+                <div className={`rounded-xl transition-all ${isRoleNameBlank ? 'ring-2 ring-red-500 border border-red-500 p-[1px]' : ''}`}>
+                  <input
+                    type="text"
+                    id="roleName"
+                    required
+                    value={formState.roleName}
+                    onChange={handleNameChange}
+                    placeholder="Editor"
+                    className="block w-full bg-white border border-neutral-300 rounded-xl py-2.5 px-4 text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent text-sm font-sans transition-all"
+                  />
+                </div>
               </div>
 
               {/* Toggles */}
@@ -364,7 +368,7 @@ function RoleModalContent({ onClose, role }: { onClose: () => void; role?: Role 
               </button>
               <button
                 type="submit"
-                disabled={isPending || !formState.roleName}
+                disabled={isPending || isRoleNameBlank}
                 className="px-5 py-2 bg-emerald-750 hover:bg-emerald-800 text-white rounded-xl text-sm font-semibold shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {isPending ? "Saving..." : isEditing ? "Save Changes" : "Create Role"}

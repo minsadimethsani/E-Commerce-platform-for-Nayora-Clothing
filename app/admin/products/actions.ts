@@ -15,7 +15,8 @@ export async function createProductAction(prevState: any, formData: FormData) {
   const name = formData.get("name") as string;
   const category = formData.get("category") as string;
   const subCategory = formData.get("subCategory") as string;
-  const price = Number(formData.get("price"));
+  const base_price = Number(formData.get("base_price"));
+  const discounted_price = Number(formData.get("discounted_price"));
   const quantityInput = Number(formData.get("quantity"));
   const image = formData.get("image") as string;
   const imagesRaw = formData.get("images") as string;
@@ -34,20 +35,6 @@ export async function createProductAction(prevState: any, formData: FormData) {
     } catch (e) {
       console.error("Failed to parse color images map", e);
     }
-  }
-
-  // Backend Validations
-  if (!name || name.trim().length < 3) {
-    errors.name = "Product name must be at least 3 characters long.";
-  }
-  if (!category) {
-    errors.category = "Category is required.";
-  }
-  if (isNaN(price) || price <= 0) {
-    errors.price = "Price must be a valid number greater than 0.";
-  }
-  if ((!image || image.trim().length === 0) && Object.keys(colorImages).length === 0) {
-    errors.image = "Product image (either main or color-specific uploader) is required.";
   }
 
   // Parse variants if available
@@ -72,11 +59,35 @@ export async function createProductAction(prevState: any, formData: FormData) {
 
   // Format and validate variants
   const formattedVariants = rawVariants.map((v: any) => ({
-    SKU_ID: generateSKU(name, v.color, v.size),
+    SKU_ID: generateSKU(name || "PRODUCT", v.color, v.size),
     color: String(v.color).trim(),
     size: isNaN(Number(v.size)) ? String(v.size).trim() : Number(v.size),
     stock_quantity: Number(v.stock_quantity) || 0
   }));
+
+  // Backend Validations
+  if (!name || name.trim().length === 0) {
+    errors.name = "Product name/title is required.";
+  } else if (name.trim().length < 3) {
+    errors.name = "Product name must be at least 3 characters long.";
+  }
+  if (!category) {
+    errors.category = "Category is required.";
+  }
+  if (isNaN(base_price) || base_price <= 0) {
+    errors.base_price = "Base price must be a valid positive number.";
+  }
+  if (isNaN(discounted_price) || discounted_price <= 0) {
+    errors.discounted_price = "Discounted price must be a valid positive number.";
+  }
+  if (formattedVariants.length === 0) {
+    errors.variants = "At least one item variant row must exist in the grid matrix.";
+  } else if (formattedVariants.some(v => v.stock_quantity < 0)) {
+    errors.variants = "All variant stock quantities must be non-negative.";
+  }
+  if ((!image || image.trim().length === 0) && Object.keys(colorImages).length === 0) {
+    errors.image = "Product image (either main or color-specific uploader) is required.";
+  }
 
   // Re-calculate total quantity and color
   const totalQuantity = formattedVariants.length > 0
@@ -111,9 +122,12 @@ export async function createProductAction(prevState: any, formData: FormData) {
 
     await addProduct({
       name: name.trim(),
+      title: name.trim(),
       category,
       ...(subCategory && { subCategory: subCategory.trim() }),
-      price,
+      price: discounted_price || base_price,
+      base_price,
+      discounted_price,
       quantity: totalQuantity,
       image: finalMainImage,
       ...(allImagesList.length > 0 && { images: allImagesList }),
@@ -141,7 +155,8 @@ export async function updateProductAction(productId: string | number, prevState:
   const name = formData.get("name") as string;
   const category = formData.get("category") as string;
   const subCategory = formData.get("subCategory") as string;
-  const price = Number(formData.get("price"));
+  const base_price = Number(formData.get("base_price"));
+  const discounted_price = Number(formData.get("discounted_price"));
   const quantityInput = Number(formData.get("quantity"));
   const image = formData.get("image") as string;
   const imagesRaw = formData.get("images") as string;
@@ -160,17 +175,6 @@ export async function updateProductAction(productId: string | number, prevState:
     } catch (e) {
       console.error("Failed to parse color images map", e);
     }
-  }
-
-  // Backend Validations
-  if (!name || name.trim().length < 3) {
-    errors.name = "Product name must be at least 3 characters long.";
-  }
-  if (!category) {
-    errors.category = "Category is required.";
-  }
-  if (isNaN(price) || price <= 0) {
-    errors.price = "Price must be a valid number greater than 0.";
   }
 
   // Parse variants if available
@@ -195,11 +199,32 @@ export async function updateProductAction(productId: string | number, prevState:
 
   // Format and validate variants
   const formattedVariants = rawVariants.map((v: any) => ({
-    SKU_ID: v.SKU_ID || generateSKU(name, v.color, v.size),
+    SKU_ID: v.SKU_ID || generateSKU(name || "PRODUCT", v.color, v.size),
     color: String(v.color).trim(),
     size: isNaN(Number(v.size)) ? String(v.size).trim() : Number(v.size),
     stock_quantity: Number(v.stock_quantity) || 0
   }));
+
+  // Backend Validations
+  if (!name || name.trim().length === 0) {
+    errors.name = "Product name/title is required.";
+  } else if (name.trim().length < 3) {
+    errors.name = "Product name must be at least 3 characters long.";
+  }
+  if (!category) {
+    errors.category = "Category is required.";
+  }
+  if (isNaN(base_price) || base_price <= 0) {
+    errors.base_price = "Base price must be a valid positive number.";
+  }
+  if (isNaN(discounted_price) || discounted_price <= 0) {
+    errors.discounted_price = "Discounted price must be a valid positive number.";
+  }
+  if (formattedVariants.length === 0) {
+    errors.variants = "At least one item variant row must exist in the grid matrix.";
+  } else if (formattedVariants.some(v => v.stock_quantity < 0)) {
+    errors.variants = "All variant stock quantities must be non-negative.";
+  }
 
   // Re-calculate total quantity and color
   const totalQuantity = formattedVariants.length > 0
@@ -234,9 +259,12 @@ export async function updateProductAction(productId: string | number, prevState:
 
     await updateProduct(productId, {
       name: name.trim(),
+      title: name.trim(),
       category,
       subCategory: subCategory ? subCategory.trim() : "",
-      price,
+      price: discounted_price || base_price,
+      base_price,
+      discounted_price,
       quantity: totalQuantity,
       image: finalMainImage,
       images: allImagesList,

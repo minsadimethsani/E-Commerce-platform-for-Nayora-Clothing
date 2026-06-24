@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
-import { ChevronDown, CreditCard, Wallet, Banknote, MapPin, Mail, Package, ChevronRight, Phone, User, Calendar } from "lucide-react";
+import { ChevronDown, CreditCard, Wallet, Banknote, MapPin, Mail, Package, ChevronRight, Phone, User, Calendar, FileText } from "lucide-react";
 import { Order, OrderStatus } from "@/lib/db";
 import { updateOrderStatusAction } from "../actions";
 
@@ -28,6 +28,7 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
       case "credit card": return <CreditCard className="w-4 h-4 mr-2" />;
       case "paypal": return <Wallet className="w-4 h-4 mr-2" />;
       case "apple pay": return <Wallet className="w-4 h-4 mr-2" />;
+      case "cash on delivery": return <Wallet className="w-4 h-4 mr-2" />;
       default: return <Banknote className="w-4 h-4 mr-2" />;
     }
   };
@@ -113,10 +114,19 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
                           </h4>
                           <ul className="space-y-3">
                             {order.items.map((item, idx) => (
-                              <li key={idx} className="flex justify-between items-center text-sm">
-                                <div className="flex items-center">
+                              <li key={idx} className="flex justify-between items-start text-sm">
+                                <div className="flex items-start">
                                   <span className="text-neutral-500 font-medium mr-3">{item.quantity}x</span>
-                                  <span className="text-neutral-800">{item.productName}</span>
+                                  <div className="flex flex-col">
+                                    <span className="text-neutral-800 font-medium">{item.productName}</span>
+                                    {(item.color || item.size) && (
+                                      <span className="text-xs text-neutral-400 mt-0.5">
+                                        {item.color && `Color: ${item.color}`}
+                                        {item.color && item.size && " | "}
+                                        {item.size && `Size: ${item.size}`}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                                 <span className="text-neutral-900 font-medium">LKR {(item.price * item.quantity).toFixed(2)}</span>
                               </li>
@@ -181,6 +191,34 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
                               ) : (
                                 <div className="text-xs text-yellow-600 bg-yellow-50 border border-yellow-200 p-4 rounded font-medium">
                                   Awaiting Slip Details & Image Upload
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {order.paymentMethod.toLowerCase() === "cash on delivery" && (
+                            <div className="mt-6 pt-6 border-t border-neutral-200">
+                              <h5 className="text-xs uppercase tracking-wider font-bold text-neutral-500 mb-4 flex items-center">
+                                <FileText className="w-4 h-4 mr-2" />
+                                COD Delivery Charge Receipt
+                              </h5>
+                              {order.deliveryChargeReceiptUrl ? (
+                                <div className="space-y-2 text-xs bg-neutral-50 p-4 rounded border border-neutral-200">
+                                  <div className="text-neutral-700">Delivery charge payment receipt uploaded:</div>
+                                  <div className="pt-2">
+                                    <a 
+                                      href={order.deliveryChargeReceiptUrl} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center px-3 py-1.5 bg-neutral-950 text-white rounded text-[10px] uppercase font-bold tracking-wider hover:bg-neutral-800 transition-colors"
+                                    >
+                                      View Receipt Image
+                                    </a>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-xs text-red-600 bg-red-50 border border-red-200 p-4 rounded font-medium">
+                                  No Delivery Fee Receipt Uploaded
                                 </div>
                               )}
                             </div>

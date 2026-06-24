@@ -17,6 +17,8 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams?.get("callbackUrl") || "/";
   const message = searchParams?.get("message");
+  const redirect = searchParams?.get("redirect");
+  const firstName = searchParams?.get("firstName");
   
   const [state, formAction, isPending] = useActionState(loginAction, initialState);
 
@@ -34,6 +36,12 @@ function LoginForm() {
           Sign in to access your curated wardrobe and exclusive offers.
         </p>
       </div>
+
+      {redirect === "checkout" && firstName && (
+        <div className="mb-8 p-6 bg-[#8C7162]/10 border border-[#8C7162]/20 text-[#2C241E] rounded-md text-sm font-medium">
+          Welcome back, {firstName}! Please log in to finalize your Nayora order.
+        </div>
+      )}
 
       {message && (
         <div className="mb-6 p-4 bg-green-50 text-green-800 rounded-md text-sm border border-green-200">

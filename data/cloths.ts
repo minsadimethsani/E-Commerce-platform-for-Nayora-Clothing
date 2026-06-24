@@ -8,9 +8,12 @@ export interface ProductVariant {
 export interface Product {
   id: string | number;
   name: string;
+  title?: string;
   category: string; // e.g. "women", "men", "accessories", "unisex"
   subCategory?: string; // e.g. "formal", "casual", "loungewear", "partywear", "bags", "eyewear", "jewelry", "accents"
   price: number;
+  base_price?: number;
+  discounted_price?: number;
   image: string;
   images?: string[];
   color?: string;

@@ -8,6 +8,9 @@ export interface AdminProduct extends Product {
   description?: string;
   createdAt?: string;
   updatedAt?: string;
+  title?: string;
+  base_price?: number;
+  discounted_price?: number;
 }
 
 const ITEMS_PER_PAGE = 8;
@@ -128,6 +131,8 @@ export interface OrderItem {
   productName: string;
   quantity: number;
   price: number;
+  size?: string;
+  color?: string;
 }
 
 export type OrderStatus = "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled";
@@ -154,6 +159,7 @@ export interface Order {
   date: string;
   items: OrderItem[];
   bankDepositDetails?: BankDepositDetails;
+  deliveryChargeReceiptUrl?: string;
 }
 
 export async function getOrders(statusFilter: string = "all", page: number = 1) {
@@ -173,8 +179,15 @@ export async function getOrders(statusFilter: string = "all", page: number = 1) 
         paymentMethod: data.paymentMethod || "Unknown",
         status: data.status || "Pending",
         date: data.createdAt || data.date || new Date().toISOString(),
-        items: data.items || [],
-        bankDepositDetails: data.bankDepositDetails || null
+        items: (data.items || []).map((item: any) => ({
+          productName: item.productName || item.name || "Unknown Product",
+          quantity: item.quantity || 1,
+          price: item.price !== undefined ? item.price : (item.priceAtPurchase || 0),
+          size: item.size || "",
+          color: item.color || ""
+        })),
+        bankDepositDetails: data.bankDepositDetails || null,
+        deliveryChargeReceiptUrl: data.deliveryChargeReceiptUrl || null
       } as Order;
     });
     

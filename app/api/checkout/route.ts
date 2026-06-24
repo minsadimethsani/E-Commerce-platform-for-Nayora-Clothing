@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     
-    const { items, shippingDetails, paymentMethod } = body;
+    const { items, shippingDetails, paymentMethod, deliveryChargeReceiptUrl } = body;
     
     if (!items || !items.length || !shippingDetails || !paymentMethod) {
       return NextResponse.json(
@@ -56,6 +56,7 @@ export async function POST(request: Request) {
       orderItems.push({
         productId: item.product.id,
         name: productData.name,
+        color: item.product.color || "Default",
         size: item.size,
         quantity: quantity,
         priceAtPurchase: realPrice
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
     }
 
     // Save order to Firestore
-    const orderData = {
+    const orderData: any = {
       userId: "guest",
       status: "processing",
       paymentMethod, // 'Card', 'Bank Deposit', 'Cash on Delivery'
@@ -79,6 +80,10 @@ export async function POST(request: Request) {
       },
       createdAt: serverTimestamp()
     };
+
+    if (deliveryChargeReceiptUrl) {
+      orderData.deliveryChargeReceiptUrl = deliveryChargeReceiptUrl;
+    }
 
     // Use a transaction to maintain an atomic counter for ORD-001, ORD-002, etc.
     const counterRef = doc(db, "counters", "ordersCounter");

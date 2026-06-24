@@ -173,6 +173,35 @@ function AddProductModalContent({ onClose, categories }: { onClose: () => void; 
     e.preventDefault();
     if (isPending) return;
 
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    const titleVal = formData.get("name") as string;
+    const basePriceVal = Number(formData.get("base_price"));
+    const discountedPriceVal = Number(formData.get("discounted_price"));
+
+    if (!titleVal || titleVal.trim().length === 0) {
+      alert("Product name/title is required.");
+      return;
+    }
+    if (isNaN(basePriceVal) || basePriceVal <= 0) {
+      alert("Base price must be a positive number.");
+      return;
+    }
+    if (isNaN(discountedPriceVal) || discountedPriceVal <= 0) {
+      alert("Discounted price must be a positive number.");
+      return;
+    }
+    if (computedVariants.length === 0) {
+      alert("At least one item variant row must exist in the grid matrix.");
+      return;
+    }
+    const hasNegativeStock = computedVariants.some(v => v.stock_quantity < 0);
+    if (hasNegativeStock) {
+      alert("All stock quantities in the grid matrix must be non-negative.");
+      return;
+    }
+
     // Validate that if there are unique colors, each has at least one image uploaded
     if (uniqueColors.length > 0) {
       const missingImages = uniqueColors.filter(color => !colorFiles[color] || colorFiles[color].length === 0);
@@ -187,9 +216,6 @@ function AddProductModalContent({ onClose, categories }: { onClose: () => void; 
         return;
       }
     }
-    
-    const form = e.currentTarget;
-    const formData = new FormData(form);
 
     const totalQuantity = computedVariants.length > 0
       ? computedVariants.reduce((sum, v) => sum + v.stock_quantity, 0)
@@ -400,18 +426,33 @@ function AddProductModalContent({ onClose, categories }: { onClose: () => void; 
                 {/* Column 2 */}
                 <div className="space-y-6">
                   <div>
-                    <label htmlFor="price" className="block text-sm font-medium text-neutral-700">Price (LKR) *</label>
+                    <label htmlFor="base_price" className="block text-sm font-medium text-neutral-700">Base Price (LKR) *</label>
                     <input
                       type="number"
-                      name="price"
-                      id="price"
+                      name="base_price"
+                      id="base_price"
                       required
-                      min="0"
+                      min="0.01"
                       step="0.01"
                       placeholder="0.00"
-                      className={`bg-white text-neutral-900 mt-1 block w-full shadow-sm sm:text-sm rounded-md py-2 px-3 border focus:outline-none focus:ring-2 focus:ring-offset-1 ${state.errors?.price ? 'border-red-300 text-red-900 focus:ring-red-500' : 'border-neutral-300 focus:ring-neutral-900 focus:border-neutral-900'}`}
+                      className={`bg-white text-neutral-900 mt-1 block w-full shadow-sm sm:text-sm rounded-md py-2 px-3 border focus:outline-none focus:ring-2 focus:ring-offset-1 ${state.errors?.base_price ? 'border-red-300 text-red-900 focus:ring-red-500' : 'border-neutral-300 focus:ring-neutral-900 focus:border-neutral-900'}`}
                     />
-                    {state.errors?.price && <p className="mt-1 text-xs text-red-600">{state.errors.price}</p>}
+                    {state.errors?.base_price && <p className="mt-1 text-xs text-red-600">{state.errors.base_price}</p>}
+                  </div>
+
+                  <div>
+                    <label htmlFor="discounted_price" className="block text-sm font-medium text-neutral-700">Discounted Price (LKR) *</label>
+                    <input
+                      type="number"
+                      name="discounted_price"
+                      id="discounted_price"
+                      required
+                      min="0.01"
+                      step="0.01"
+                      placeholder="0.00"
+                      className={`bg-white text-neutral-900 mt-1 block w-full shadow-sm sm:text-sm rounded-md py-2 px-3 border focus:outline-none focus:ring-2 focus:ring-offset-1 ${state.errors?.discounted_price ? 'border-red-300 text-red-900 focus:ring-red-500' : 'border-neutral-300 focus:ring-neutral-900 focus:border-neutral-900'}`}
+                    />
+                    {state.errors?.discounted_price && <p className="mt-1 text-xs text-red-600">{state.errors.discounted_price}</p>}
                   </div>
 
                   <div>

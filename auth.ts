@@ -27,12 +27,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         if (!user) {
-          throw new Error("Invalid credentials.");
+          throw new Error("Please create an account ");
         }
 
         const isValid = await bcrypt.compare(password, user.passwordHash);
         if (!isValid) {
-          throw new Error("Invalid credentials.");
+          throw new Error(" Invalid credentials");
         }
 
         return {

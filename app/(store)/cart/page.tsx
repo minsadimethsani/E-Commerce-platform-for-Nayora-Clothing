@@ -10,35 +10,15 @@ export default function CartPage() {
   const { cart, removeFromCart, updateQuantity, cartTotal, setPendingCheckout } = useCart();
   const router = useRouter();
 
-  // Form State for shipping details if user proceeds from Cart
-  const [formData, setFormData] = useState({ name: "", email: "", address: "" });
-  const [formErrors, setFormErrors] = useState<{name?: string, email?: string, address?: string}>({});
-
-  const validateForm = () => {
-    const errors: any = {};
-    if (!formData.name.trim()) errors.name = "Name is required";
-    if (!formData.email.trim()) {
-      errors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = "Invalid email format";
-    }
-    if (!formData.address.trim()) errors.address = "Address is required";
-    
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleCheckout = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCheckout = () => {
     if (cart.length === 0) return;
-    if (!validateForm()) return;
 
     setPendingCheckout({
       items: cart,
       shippingDetails: {
-        name: formData.name,
-        email: formData.email,
-        address: formData.address,
+        name: "",
+        email: "",
+        address: "",
       },
       totalAmount: cartTotal
     });
@@ -91,7 +71,9 @@ export default function CartPage() {
                         {item.product.name}
                       </Link>
                       <span className="text-sm text-espresso/70 mb-1">LKR {item.product.price}</span>
-                      <span className="text-xs uppercase tracking-widest font-bold text-espresso/50">Size: {item.size}</span>
+                      <span className="text-xs uppercase tracking-widest font-bold text-espresso/50">
+                        Size: {item.size} | Color: {item.product.color || "Default"}
+                      </span>
                     </div>
                   </div>
                   
@@ -149,49 +131,12 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <form onSubmit={handleCheckout} className="space-y-5">
-                  <h4 className="text-xs font-bold uppercase tracking-widest border-b border-espresso/10 pb-2 mb-4">Shipping Details</h4>
-                  
-                  <div>
-                    <label className="block text-xs uppercase tracking-widest font-bold text-espresso mb-2">Full Name</label>
-                    <input 
-                      type="text" 
-                      value={formData.name}
-                      onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      className={`w-full border ${formErrors.name ? 'border-red-500' : 'border-espresso/20'} bg-transparent px-4 py-3 text-sm outline-none focus:border-espresso transition-colors`}
-                    />
-                    {formErrors.name && <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs uppercase tracking-widest font-bold text-espresso mb-2">Email Address</label>
-                    <input 
-                      type="email" 
-                      value={formData.email}
-                      onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      className={`w-full border ${formErrors.email ? 'border-red-500' : 'border-espresso/20'} bg-transparent px-4 py-3 text-sm outline-none focus:border-espresso transition-colors`}
-                    />
-                    {formErrors.email && <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>}
-                  </div>
-
-                  <div>
-                    <label className="block text-xs uppercase tracking-widest font-bold text-espresso mb-2">Shipping Address</label>
-                    <textarea 
-                      rows={3}
-                      value={formData.address}
-                      onChange={(e) => setFormData({...formData, address: e.target.value})}
-                      className={`w-full border ${formErrors.address ? 'border-red-500' : 'border-espresso/20'} bg-transparent px-4 py-3 text-sm outline-none focus:border-espresso transition-colors resize-none`}
-                    ></textarea>
-                    {formErrors.address && <p className="text-red-500 text-xs mt-1">{formErrors.address}</p>}
-                  </div>
-
-                  <button 
-                    type="submit"
-                    className="w-full py-5 bg-espresso text-cream text-sm uppercase tracking-widest font-bold hover:bg-espresso/90 transition-colors shadow-xl mt-4"
-                  >
-                    Proceed to Payment
-                  </button>
-                </form>
+                <button 
+                  onClick={handleCheckout}
+                  className="w-full py-5 bg-espresso text-cream text-sm uppercase tracking-widest font-bold hover:bg-espresso/90 transition-colors shadow-xl mt-4"
+                >
+                  Proceed to Checkout
+                </button>
               </div>
             </div>
 

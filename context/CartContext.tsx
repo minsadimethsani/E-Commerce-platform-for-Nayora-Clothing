@@ -15,6 +15,7 @@ interface PendingCheckout {
     name: string;
     email: string;
     address: string;
+    phone?: string;
   };
   totalAmount: number;
 }
@@ -37,6 +38,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [pendingCheckout, setPendingCheckout] = useState<PendingCheckout | null>(null);
 
+  const [isLoaded, setIsLoaded] = useState(false);
+
   // Load from local storage on mount
   useEffect(() => {
     const savedCart = localStorage.getItem("nayora_cart");
@@ -47,12 +50,33 @@ export function CartProvider({ children }: { children: ReactNode }) {
         console.error("Failed to parse cart");
       }
     }
+    const savedCheckout = localStorage.getItem("nayora_pending_checkout");
+    if (savedCheckout) {
+      try {
+        setPendingCheckout(JSON.parse(savedCheckout));
+      } catch (e) {
+        console.error("Failed to parse pending checkout");
+      }
+    }
+    setIsLoaded(true);
   }, []);
 
   // Save to local storage on change
   useEffect(() => {
-    localStorage.setItem("nayora_cart", JSON.stringify(cart));
-  }, [cart]);
+    if (isLoaded) {
+      localStorage.setItem("nayora_cart", JSON.stringify(cart));
+    }
+  }, [cart, isLoaded]);
+
+  useEffect(() => {
+    if (isLoaded) {
+      if (pendingCheckout) {
+        localStorage.setItem("nayora_pending_checkout", JSON.stringify(pendingCheckout));
+      } else {
+        localStorage.removeItem("nayora_pending_checkout");
+      }
+    }
+  }, [pendingCheckout, isLoaded]);
 
   const addToCart = (product: Product, size: string, quantity: number) => {
     setCart((prevCart) => {

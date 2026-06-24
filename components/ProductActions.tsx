@@ -119,6 +119,11 @@ export default function ProductActions({ product, onColorChange }: ProductAction
   const isCurrentOutOfStock = selectedSize !== null && (!selectedVariant || selectedVariant.stock_quantity === 0);
 
   const handleBuyNowClick = () => {
+    if (!selectedColor) {
+      setError("Please select a color before proceeding.");
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
     if (!selectedSize) {
       setError("Please select a size before proceeding.");
       setTimeout(() => setError(null), 3000);
@@ -130,6 +135,11 @@ export default function ProductActions({ product, onColorChange }: ProductAction
   };
 
   const handleAddToCartClick = () => {
+    if (!selectedColor) {
+      setError("Please select a color before adding to cart.");
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
     if (!selectedSize) {
       setError("Please select a size before adding to cart.");
       setTimeout(() => setError(null), 3000);
@@ -238,13 +248,7 @@ export default function ProductActions({ product, onColorChange }: ProductAction
                   type="button"
                   onClick={() => {
                     setSelectedColor(col);
-                    // auto select size if the current selected size is not available in the new color
-                    const sizeExists = variants.some(v => v.color.toLowerCase() === col.toLowerCase() && String(v.size) === String(selectedSize) && v.stock_quantity > 0);
-                    if (!sizeExists) {
-                      // find first available size for this color
-                      const firstAvail = variants.find(v => v.color.toLowerCase() === col.toLowerCase() && v.stock_quantity > 0);
-                      setSelectedSize(firstAvail ? String(firstAvail.size) : null);
-                    }
+                    setSelectedSize(null);
                   }}
                   className={`w-8 h-8 rounded-full border transition-all hover:scale-110 relative flex items-center justify-center ${
                     isSelected ? 'ring-2 ring-espresso ring-offset-2 border-espresso' : 'border-espresso/20'

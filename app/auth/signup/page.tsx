@@ -80,7 +80,7 @@ function SignupForm() {
             id="phone"
             name="phone"
             type="tel"
-            placeholder="+1 (555) 000-0000"
+            placeholder="0771234567 or +94771234567"
             className="w-full bg-transparent border-b border-[#2C241E]/30 px-0 py-2.5 text-[#2C241E] focus:outline-none focus:border-[#8C7162] transition-colors placeholder:text-[#2C241E]/30"
           />
         </div>

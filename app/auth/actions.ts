@@ -1,7 +1,7 @@
 "use server";
 
 import { getUserByEmail, getUserByPhone, createUser, updateUser } from "@/lib/user-db";
-import { hashPassword } from "@/lib/auth";
+import { hashPassword, comparePasswords } from "@/lib/auth";
 import { signIn, signOut } from "@/auth";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { AuthError } from "next-auth";
@@ -30,7 +30,12 @@ export async function loginAction(prevState: ActionResponse, formData: FormData)
     }
 
     if (!user) {
-      return { error: "Invalid credentials." };
+      return { error: "Please create an account " };
+    }
+
+    const isPasswordCorrect = await comparePasswords(password, user.passwordHash);
+    if (!isPasswordCorrect) {
+      return { error: " Invalid credentials" };
     }
 
     let redirectUrl = "/";
@@ -57,9 +62,9 @@ export async function loginAction(prevState: ActionResponse, formData: FormData)
 
     if (err instanceof AuthError) {
       if (err.type === "CredentialsSignin") {
-        return { error: "Invalid credentials." };
+        return { error: " Invalid credentials" };
       }
-      return { error: err.message || "Invalid credentials." };
+      return { error: err.message || " Invalid credentials" };
     }
 
     console.error("Login action error:", err);
@@ -88,6 +93,10 @@ export async function signupAction(prevState: ActionResponse, formData: FormData
   }
 
   if (phone) {
+    const phoneRegex = /^(?:07\d{8}|\+94\d{9})$/;
+    if (!phoneRegex.test(phone)) {
+      return { error: "Please enter a valid phone number " };
+    }
     const existingPhone = await getUserByPhone(phone);
     if (existingPhone) {
       return { error: "Phone number is already in use." };
@@ -106,22 +115,8 @@ export async function signupAction(prevState: ActionResponse, formData: FormData
     privileges: []
   });
 
-  try {
-    // Automatically log user in using NextAuth credentials sign in
-    const redirectUrl = callbackUrl.startsWith('/auth') ? '/' : callbackUrl;
-    await signIn("credentials", {
-      identifier: newUser.email,
-      password,
-      redirectTo: redirectUrl,
-    });
-    return { success: true, redirectUrl };
-  } catch (err: any) {
-    if (isRedirectError(err)) {
-      throw err;
-    }
-    console.error("Signup auto-login error:", err);
-    return { error: "Account created successfully but auto-login failed. Please sign in manually." };
-  }
+  const redirectUrl = `/auth/login?message=${encodeURIComponent("Account created successfully. Please sign in.")}&callbackUrl=${encodeURIComponent(callbackUrl)}`;
+  return { success: true, redirectUrl };
 }
 
 export async function logoutAction() {
