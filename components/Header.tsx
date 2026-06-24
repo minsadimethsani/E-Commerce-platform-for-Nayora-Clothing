@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { useEffect, useState, useRef, useMemo } from 'react';
-import { User, LogOut, LayoutDashboard } from 'lucide-react';
+import { User, LogOut, LayoutDashboard, Menu, X } from 'lucide-react';
 import { logoutAction } from '@/app/auth/actions';
 import Image from 'next/image';
 import { Product } from '@/data/cloths';
@@ -42,6 +42,9 @@ export default function Header({
   const [isMegamenuHovered, setIsMegamenuHovered] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expandedMobileCat, setExpandedMobileCat] = useState<string | null>(null);
 
   // Identify hero slideshow images to exclude them
   const heroImageUrls = useMemo(() => {
@@ -204,11 +207,19 @@ export default function Header({
   const isAdmin = session && ['super_admin', 'admin', 'employee'].includes(session.role);
 
   return (
-    <div className="w-full sticky top-4 z-50 px-4 md:px-6 pointer-events-none">
+    <div className="w-full sticky top-4 z-50 px-4 md:px-6 pointer-events-none mb-6">
       <header className="max-w-7xl mx-auto bg-cream/90 backdrop-blur-md border border-espresso/10 rounded-full shadow-lg h-16 flex items-center justify-between pointer-events-auto transition-all duration-300 relative px-6 md:px-8 hover:shadow-xl">
         
-        {/* Left: Logo */}
-        <div className="flex-shrink-0">
+        {/* Left: Logo and Mobile Menu Toggle */}
+        <div className="flex items-center gap-4 flex-shrink-0">
+          {/* Hamburger Menu Toggle for Mobile */}
+          <button
+            aria-label="Toggle Menu"
+            className="lg:hidden hover:text-olive transition-colors cursor-pointer flex items-center justify-center"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={22} strokeWidth={1.5} /> : <Menu size={22} strokeWidth={1.5} />}
+          </button>
           <Link href="/" className="text-xl md:text-2xl font-serif font-bold tracking-[0.2em] text-espresso hover:text-olive transition-colors">
             NAYORA
           </Link>
@@ -391,6 +402,94 @@ export default function Header({
         </div>
 
       </header>
+
+      {/* Mobile Drawer Overlay */}
+      {mounted && (
+        <div 
+          className={`fixed inset-0 z-[100] bg-black/40 backdrop-blur-xs pointer-events-auto lg:hidden transition-opacity duration-300 ${
+            isMobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
+          }`}
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <div 
+            className={`absolute top-0 right-0 h-full w-[300px] max-w-[85vw] bg-cream shadow-2xl flex flex-col p-6 overflow-y-auto transition-transform duration-300 ${
+              isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header of Drawer */}
+            <div className="flex items-center justify-between mb-8 border-b border-espresso/10 pb-4">
+              <span className="font-serif font-bold text-lg tracking-[0.2em]">NAYORA</span>
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-1 hover:text-olive transition-colors cursor-pointer"
+                aria-label="Close menu"
+              >
+                <X size={22} strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {/* Navigation links */}
+            <nav className="flex flex-col gap-6 font-semibold uppercase tracking-[0.15em] text-sm">
+              {navItems.map((item) => {
+                if (item.hasMegamenu && item.key) {
+                  const isExpanded = expandedMobileCat === item.key;
+                  const catObj = categories.find(c => c.slug === item.key);
+                  return (
+                    <div key={item.label} className="flex flex-col border-b border-espresso/5 pb-3">
+                      <button
+                        onClick={() => setExpandedMobileCat(isExpanded ? null : (item.key || null))}
+                        className="flex items-center justify-between w-full text-left font-semibold uppercase tracking-[0.15em] hover:text-olive py-1 cursor-pointer"
+                      >
+                        <span>{item.label}</span>
+                        <span className={`transform transition-transform duration-200 text-xs ${isExpanded ? "rotate-180" : ""}`}>
+                          ▼
+                        </span>
+                      </button>
+                      
+                      {/* Accordion content */}
+                      <div className={`overflow-hidden transition-all duration-300 ${
+                        isExpanded ? "max-h-96 opacity-100 mt-3" : "max-h-0 opacity-0"
+                      }`}>
+                        <div className="flex flex-col gap-3 pl-4 normal-case tracking-wide font-normal text-espresso/80">
+                          <Link 
+                            href={item.href}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="hover:text-olive text-sm font-semibold tracking-[0.1em] uppercase"
+                          >
+                            SHOP ALL
+                          </Link>
+                          {catObj && catObj.subCategories && catObj.subCategories.map((sub) => (
+                            <Link
+                              key={sub}
+                              href={`/category/${catObj.slug}/${sub}`}
+                              onClick={() => setIsMobileMenuOpen(false)}
+                              className="hover:text-olive text-sm capitalize"
+                            >
+                              {sub}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="hover:text-olive py-1 border-b border-espresso/5 pb-3"
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

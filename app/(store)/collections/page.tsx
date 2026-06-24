@@ -148,15 +148,7 @@ function CollectionsContent() {
               ))}
             </ul>
           </div>
-          
-          <div className="hidden md:block">
-            <h3 className="text-xs font-bold uppercase tracking-[0.2em] mb-6 border-b border-espresso/20 pb-3">Filter by Color</h3>
-            <div className="flex flex-wrap gap-4">
-              {["bg-[#FAF9F6] border border-espresso/20", "bg-[#3E2723]", "bg-[#606C38]", "bg-[#9F8170]", "bg-[#4A0E17]", "bg-[#111111]"].map((colorClass, idx) => (
-                <button key={idx} className={`w-7 h-7 rounded-full ${colorClass} hover:scale-110 transition-transform shadow-sm cursor-pointer border border-black/5`} aria-label="Color Filter"></button>
-              ))}
-            </div>
-          </div>
+
         </aside>
 
         {/* Product Grid */}

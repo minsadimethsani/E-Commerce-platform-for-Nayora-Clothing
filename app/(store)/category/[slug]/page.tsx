@@ -33,8 +33,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
     <div className="flex flex-col w-full bg-cream text-espresso min-h-screen">
       
       {/* Category Hero Section */}
-      <section className="relative w-full pt-6 md:pt-16 pb-8 bg-cream px-4 md:px-8">
-        <div className="w-full max-w-7xl h-[50vh] md:h-[60vh] mx-auto relative overflow-hidden rounded-2xl md:rounded-[2rem] shadow-xl flex items-center justify-center bg-espresso">
+      <section className="relative w-full bg-cream">
+        <div className="w-full h-[25vh] md:h-[30vh] relative overflow-hidden flex items-center justify-center bg-espresso">
           <Image 
             src={heroImage} 
             alt={title} 
@@ -45,18 +45,24 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           <div className="absolute inset-0 bg-espresso/30 z-10 pointer-events-none"></div>
           
           <div className="relative z-20 text-center px-6 flex flex-col items-center w-full max-w-3xl mx-auto">
-            <span className="text-cream uppercase tracking-[0.4em] text-xs font-bold mb-4 drop-shadow-md border-b border-cream/30 pb-2">
+            <span className="text-cream uppercase tracking-[0.4em] text-[10px] md:text-xs font-bold mb-2 drop-shadow-md border-b border-cream/30 pb-1">
               The Collection
             </span>
-            <h1 className="text-4xl md:text-6xl font-serif font-bold mb-4 text-cream tracking-tight drop-shadow-md">
+            <h1 className="text-3xl md:text-5xl font-serif font-bold text-cream tracking-tight drop-shadow-md">
               {title}
             </h1>
-            <p className="text-base md:text-lg text-cream/90 font-light leading-relaxed drop-shadow-md max-w-xl mx-auto">
-              {description}
-            </p>
           </div>
         </div>
       </section>
+
+      {/* Category Description */}
+      {description && (
+        <div className="w-full max-w-3xl mx-auto text-center px-6 pt-10 pb-4 animate-in fade-in duration-500">
+          <p className="text-sm md:text-base text-espresso/70 font-light leading-relaxed">
+            {description}
+          </p>
+        </div>
+      )}
 
       {/* Subcategory Navigation */}
       {subCategories.length > 0 && (

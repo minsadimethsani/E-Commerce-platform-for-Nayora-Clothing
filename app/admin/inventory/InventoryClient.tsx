@@ -2,30 +2,26 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { 
   Search, 
   Filter, 
-  Save, 
-  Check, 
   Loader2, 
   ArrowUpDown, 
   AlertTriangle,
-  RefreshCw
+  RefreshCw,
+  Eye
 } from "lucide-react";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { updateVariantStock } from "@/lib/db";
-import { Product, ProductVariant } from "@/data/cloths";
+import { Product } from "@/data/cloths";
 
-interface FlattenedSKU {
-  productId: string;
-  productTitle: string;
+interface GroupedProductRow {
+  id: string;
+  name: string;
   image: string;
   category: string;
-  skuId: string;
-  color: string;
-  size: string | number;
-  stock: number;
+  totalStock: number;
 }
 
 export default function InventoryClient() {
@@ -34,9 +30,6 @@ export default function InventoryClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedStockStatus, setSelectedStockStatus] = useState("all");
-  const [editingStock, setEditingStock] = useState<Record<string, number>>({});
-  const [savingSku, setSavingSku] = useState<string | null>(null);
-  const [saveSuccessSku, setSaveSuccessSku] = useState<string | null>(null);
 
   // Subscribe to real-time updates from products collection
   useEffect(() => {
@@ -46,7 +39,6 @@ export default function InventoryClient() {
       (snapshot) => {
         const loadedProducts: Product[] = snapshot.docs.map((doc) => {
           const data = doc.data();
-          // Normalize price, name, images
           return {
             ...data,
             id: doc.id,
@@ -68,99 +60,43 @@ export default function InventoryClient() {
     return () => unsubscribe();
   }, []);
 
-  // Flatten products and variants
-  const getFlattenedSKUs = (): FlattenedSKU[] => {
-    const rows: FlattenedSKU[] = [];
-    products.forEach((p) => {
-      if (p.variants && p.variants.length > 0) {
-        p.variants.forEach((v) => {
-          rows.push({
-            productId: String(p.id),
-            productTitle: p.name,
-            image: p.image,
-            category: p.category,
-            skuId: v.SKU_ID,
-            color: v.color,
-            size: v.size,
-            stock: v.stock_quantity
-          });
-        });
-      } else {
-        // legacy product fallback
-        const cleanName = p.name.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
-        const cleanColor = (p.color || "DEFAULT").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
-        const skuId = `NYR-${cleanName}-${cleanColor}-S`;
+  // Group inventory rows by product (summing stock of variants)
+  const getProductRows = (): GroupedProductRow[] => {
+    return products.map((p) => {
+      const totalStock = p.variants && p.variants.length > 0
+        ? p.variants.reduce((sum, v) => sum + (v.stock_quantity || 0), 0)
+        : ((p as any).quantity !== undefined ? (p as any).quantity : 0);
 
-        rows.push({
-          productId: String(p.id),
-          productTitle: p.name,
-          image: p.image,
-          category: p.category,
-          skuId: skuId,
-          color: p.color || "Default",
-          size: "S",
-          stock: (p as any).quantity !== undefined ? (p as any).quantity : 0
-        });
-      }
+      return {
+        id: String(p.id),
+        name: p.name,
+        image: p.image,
+        category: p.category,
+        totalStock: totalStock
+      };
     });
-    return rows;
   };
 
-  const allSKUs = getFlattenedSKUs();
+  const productRows = getProductRows();
 
-  // Filter SKUs
-  const filteredSKUs = allSKUs.filter((sku) => {
+  // Filter products
+  const filteredProducts = productRows.filter((p) => {
     const matchesSearch = 
-      sku.productTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      sku.skuId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      sku.color.toLowerCase().includes(searchQuery.toLowerCase());
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.id.toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesCategory = 
       selectedCategory === "all" || 
-      sku.category.toLowerCase() === selectedCategory.toLowerCase();
+      p.category.toLowerCase() === selectedCategory.toLowerCase();
 
     const matchesStock = 
       selectedStockStatus === "all" ||
-      (selectedStockStatus === "out" && sku.stock === 0) ||
-      (selectedStockStatus === "low" && sku.stock >= 1 && sku.stock <= 5) ||
-      (selectedStockStatus === "in" && sku.stock > 5);
+      (selectedStockStatus === "out" && p.totalStock === 0) ||
+      (selectedStockStatus === "low" && p.totalStock >= 1 && p.totalStock <= 5) ||
+      (selectedStockStatus === "in" && p.totalStock > 5);
 
     return matchesSearch && matchesCategory && matchesStock;
   });
-
-  const handleStockChange = (skuId: string, val: string) => {
-    const parsed = parseInt(val);
-    setEditingStock(prev => ({
-      ...prev,
-      [skuId]: isNaN(parsed) ? 0 : Math.max(0, parsed)
-    }));
-  };
-
-  const handleSaveStock = async (productId: string, skuId: string) => {
-    const newValue = editingStock[skuId];
-    if (newValue === undefined) return;
-
-    try {
-      setSavingSku(skuId);
-      await updateVariantStock(productId, skuId, newValue);
-      
-      // Show success animation
-      setSaveSuccessSku(skuId);
-      setTimeout(() => setSaveSuccessSku(null), 1500);
-
-      // Clean up editing state
-      setEditingStock(prev => {
-        const copy = { ...prev };
-        delete copy[skuId];
-        return copy;
-      });
-    } catch (err) {
-      console.error("Failed to save stock:", err);
-      alert("Failed to update stock. Please try again.");
-    } finally {
-      setSavingSku(null);
-    }
-  };
 
   const renderStockBadge = (stock: number) => {
     if (stock === 0) {
@@ -192,7 +128,7 @@ export default function InventoryClient() {
         <div>
           <h1 className="text-3xl font-serif font-bold text-neutral-900 tracking-tight">Inventory Management</h1>
           <p className="text-sm text-neutral-500 mt-1 font-sans">
-            Monitor apparel items, track individual SKUs, and instantly update stock values in real-time.
+            Monitor total stock quantity and status for each product. Click "Manage Stock" to view and update detailed variant-level quantities.
           </p>
         </div>
         <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-neutral-200 text-xs font-medium text-neutral-500 shadow-sm">
@@ -208,7 +144,7 @@ export default function InventoryClient() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <input
             type="text"
-            placeholder="Search by Product name, SKU ID, or Color..."
+            placeholder="Search by Product name or Product ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full bg-white text-neutral-900 pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-neutral-900 focus:border-neutral-900"
@@ -247,16 +183,16 @@ export default function InventoryClient() {
         </div>
       </div>
 
-      {/* SKUs List Table */}
+      {/* Products Inventory List Table */}
       <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 space-y-3">
             <Loader2 className="w-8 h-8 text-neutral-900 animate-spin" />
             <p className="text-sm text-neutral-500">Loading catalog from Firestore...</p>
           </div>
-        ) : filteredSKUs.length === 0 ? (
+        ) : filteredProducts.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-sm text-neutral-500 font-medium">No matching SKU combinations found.</p>
+            <p className="text-sm text-neutral-500 font-medium">No matching products found.</p>
             <p className="text-xs text-neutral-400 mt-1">Try adjusting your filters or search keywords.</p>
           </div>
         ) : (
@@ -267,31 +203,24 @@ export default function InventoryClient() {
                   <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Product Image</th>
                   <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Product Title</th>
                   <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Category</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">SKU ID</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Color</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Size</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Stock Level</th>
-                  <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-neutral-500 uppercase tracking-wider">Update Qty</th>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Total Stock</th>
+                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-neutral-500 uppercase tracking-wider">Stock Status</th>
+                  <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-neutral-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-neutral-100">
-                {filteredSKUs.map((row) => {
-                  const currentStockVal = editingStock[row.skuId] !== undefined ? editingStock[row.skuId] : row.stock;
-                  const isModified = editingStock[row.skuId] !== undefined && editingStock[row.skuId] !== row.stock;
-                  const isSaving = savingSku === row.skuId;
-                  const isSuccess = saveSuccessSku === row.skuId;
-
+                {filteredProducts.map((row) => {
                   return (
                     <tr 
-                      key={row.skuId} 
-                      className={`hover:bg-neutral-50/50 transition-colors ${isSuccess ? 'bg-emerald-50/40 hover:bg-emerald-50/40' : ''}`}
+                      key={row.id} 
+                      className="hover:bg-neutral-50/50 transition-colors"
                     >
                       {/* Product Image */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="relative w-12 h-16 rounded overflow-hidden bg-neutral-100 border border-neutral-200">
                           <Image
                             src={row.image || "/hero.png"}
-                            alt={row.productTitle}
+                            alt={row.name}
                             fill
                             sizes="48px"
                             className="object-cover"
@@ -301,8 +230,10 @@ export default function InventoryClient() {
 
                       {/* Product Title */}
                       <td className="px-6 py-4">
-                        <div className="text-sm font-semibold text-neutral-900 font-serif line-clamp-1">{row.productTitle}</div>
-                        <div className="text-xs text-neutral-400 mt-0.5 font-mono">id: {row.productId}</div>
+                        <Link href={`/admin/inventory/${row.id}`} className="text-sm font-semibold text-neutral-900 font-serif hover:text-olive transition-colors hover:underline">
+                          {row.name}
+                        </Link>
+                        <div className="text-xs text-neutral-400 mt-0.5 font-mono">ID: {row.id}</div>
                       </td>
 
                       {/* Category */}
@@ -312,62 +243,24 @@ export default function InventoryClient() {
                         </span>
                       </td>
 
-                      {/* SKU ID */}
-                      <td className="px-6 py-4 whitespace-nowrap font-mono text-xs font-semibold text-neutral-800">
-                        {row.skuId}
-                      </td>
-
-                      {/* Color */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">
-                        <div className="flex items-center gap-2">
-                          <div className="w-3.5 h-3.5 rounded-full border border-neutral-300 shadow-inner flex-shrink-0" style={{ backgroundColor: row.color.startsWith('#') ? row.color : '#CCCCCC' }} />
-                          {row.color}
-                        </div>
-                      </td>
-
-                      {/* Size */}
+                      {/* Total Stock */}
                       <td className="px-6 py-4 whitespace-nowrap font-semibold text-sm text-neutral-800">
-                        {row.size}
+                        {row.totalStock} units
                       </td>
 
-                      {/* Stock Level Badge */}
+                      {/* Stock Status Badge */}
                       <td className="px-6 py-4 whitespace-nowrap">
-                        {renderStockBadge(row.stock)}
+                        {renderStockBadge(row.totalStock)}
                       </td>
 
-                      {/* Update Qty actions */}
+                      {/* Actions */}
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="inline-flex items-center gap-2">
-                          <input
-                            type="number"
-                            min="0"
-                            value={currentStockVal}
-                            disabled={isSaving}
-                            onChange={(e) => handleStockChange(row.skuId, e.target.value)}
-                            className="w-20 bg-white text-neutral-900 text-center py-1.5 border border-neutral-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900 disabled:opacity-50"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleSaveStock(row.productId, row.skuId)}
-                            disabled={!isModified || isSaving}
-                            className={`p-2 rounded-md border text-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-neutral-900 ${
-                              isSuccess 
-                                ? 'bg-[#2E7D32] border-[#2E7D32] text-white shadow-md' 
-                                : isModified
-                                  ? 'bg-neutral-900 hover:bg-neutral-800 border-neutral-900 text-white shadow-md cursor-pointer'
-                                  : 'bg-white border-neutral-200 text-neutral-300 cursor-not-allowed'
-                            }`}
-                            title="Save changes"
-                          >
-                            {isSaving ? (
-                              <Loader2 className="w-4 h-4 animate-spin text-neutral-500" />
-                            ) : isSuccess ? (
-                              <Check className="w-4 h-4" />
-                            ) : (
-                              <Save className="w-4 h-4" />
-                            )}
-                          </button>
-                        </div>
+                        <Link
+                          href={`/admin/inventory/${row.id}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer shadow-sm"
+                        >
+                          <Eye className="w-3.5 h-3.5" /> Manage Stock
+                        </Link>
                       </td>
                     </tr>
                   );

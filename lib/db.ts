@@ -132,6 +132,15 @@ export interface OrderItem {
 
 export type OrderStatus = "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled";
 
+export interface BankDepositDetails {
+  depositorName: string;
+  referenceNumber: string;
+  depositedAmount: number;
+  depositedDateTime: string;
+  bankName: string;
+  slipUrl: string;
+}
+
 export interface Order {
   id: string;
   orderNumber?: string;
@@ -144,6 +153,7 @@ export interface Order {
   status: OrderStatus;
   date: string;
   items: OrderItem[];
+  bankDepositDetails?: BankDepositDetails;
 }
 
 export async function getOrders(statusFilter: string = "all", page: number = 1) {
@@ -163,7 +173,8 @@ export async function getOrders(statusFilter: string = "all", page: number = 1) 
         paymentMethod: data.paymentMethod || "Unknown",
         status: data.status || "Pending",
         date: data.createdAt || data.date || new Date().toISOString(),
-        items: data.items || []
+        items: data.items || [],
+        bankDepositDetails: data.bankDepositDetails || null
       } as Order;
     });
     

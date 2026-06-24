@@ -1,31 +1,40 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getAllProducts } from "@/lib/products";
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const products = await getAllProducts();
+  const productWithImage = products.find((p) => p.image);
+  const heroImage = productWithImage ? productWithImage.image : "/heritage.png";
+
   return (
     <div className="flex flex-col w-full bg-cream text-espresso min-h-screen">
       
       {/* Hero Section */}
-      <section className="relative w-full h-[70vh] flex items-center justify-center overflow-hidden bg-espresso">
-        <Image 
-          src="/heritage.png" 
-          alt="The Nayora Heritage" 
-          fill 
-          className="object-cover object-center opacity-60"
-          priority
-        />
-        <div className="absolute inset-0 bg-espresso/40 z-10 pointer-events-none"></div>
+      <section className="relative w-full h-[70vh] flex flex-col lg:flex-row items-center overflow-hidden bg-espresso">
         
-        <div className="relative z-20 text-center px-6 flex flex-col items-center w-full max-w-4xl mx-auto">
-          <span className="text-cream uppercase tracking-[0.4em] text-xs font-bold mb-6 drop-shadow-md">
+        {/* Left Column: Content aligned left */}
+        <div className="relative z-20 w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-24 h-full text-left py-12 lg:py-0">
+          <span className="text-olive uppercase tracking-[0.4em] text-xs font-bold mb-6 block">
             Our Heritage
           </span>
-          <h1 className="text-5xl md:text-7xl font-serif font-bold mb-8 text-cream leading-tight drop-shadow-md">
+          <h1 className="text-4xl md:text-6xl font-serif font-bold mb-8 text-cream leading-tight">
             Redefining Luxury
           </h1>
-          <p className="text-lg md:text-xl text-cream/90 max-w-2xl font-light leading-relaxed drop-shadow-md">
+          <p className="text-base md:text-lg text-cream/80 max-w-lg font-light leading-relaxed">
             Founded on the principle that less is infinitely more. We create garments that outlast seasons and transcend trends.
           </p>
+        </div>
+
+        {/* Right Column: Image aligned right with zoom effect */}
+        <div className="relative w-full lg:w-1/2 h-[40vh] lg:h-full overflow-hidden shrink-0">
+          <Image 
+            src={heroImage} 
+            alt="The Nayora Heritage" 
+            fill 
+            className="object-cover object-center animate-slow-zoom opacity-80"
+            priority
+          />
         </div>
       </section>
 

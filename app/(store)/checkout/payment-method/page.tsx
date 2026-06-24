@@ -33,7 +33,7 @@ export default function PaymentMethodPage() {
       return;
     }
 
-    // If Bank Deposit or COD, process order immediately
+    // If Bank Deposit or COD, process order first
     setIsLoading(true);
     setError(null);
 
@@ -54,12 +54,16 @@ export default function PaymentMethodPage() {
         throw new Error(data.error || "Checkout failed");
       }
 
-      // Redirect to the dedicated Order Confirmed page
-      router.push(`/checkout/success?orderId=${data.orderId}`);
+      if (selectedMethod === "Bank Deposit") {
+        // Redirect to the bank deposit slip upload page
+        router.push(`/checkout/bank-deposit?orderId=${data.orderId}&orderNumber=${data.orderNumber}&amount=${pendingCheckout.totalAmount}`);
+      } else {
+        // Redirect to the dedicated Order Confirmed page (COD)
+        router.push(`/checkout/success?orderId=${data.orderId}`);
+      }
       
     } catch (err: any) {
       setError(err.message);
-    } finally {
       setIsLoading(false);
     }
   };

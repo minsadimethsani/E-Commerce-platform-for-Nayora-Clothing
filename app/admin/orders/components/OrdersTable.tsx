@@ -151,6 +151,40 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
                               <span className="text-neutral-600">{order.address}</span>
                             </div>
                           </div>
+
+                          {order.paymentMethod.toLowerCase() === "bank deposit" && (
+                            <div className="mt-6 pt-6 border-t border-neutral-200">
+                              <h5 className="text-xs uppercase tracking-wider font-bold text-neutral-500 mb-4 flex items-center">
+                                <Banknote className="w-4 h-4 mr-2" />
+                                Bank Deposit Verification
+                              </h5>
+                              {order.bankDepositDetails ? (
+                                <div className="space-y-2 text-xs bg-neutral-50 p-4 rounded border border-neutral-200">
+                                  <div><span className="text-neutral-500">Depositor Name:</span> <span className="font-semibold text-neutral-900">{order.bankDepositDetails.depositorName}</span></div>
+                                  <div><span className="text-neutral-500">Reference / Txn ID:</span> <span className="font-semibold font-mono text-neutral-900">{order.bankDepositDetails.referenceNumber}</span></div>
+                                  <div><span className="text-neutral-500">Bank Name:</span> <span className="font-semibold text-neutral-900">{order.bankDepositDetails.bankName}</span></div>
+                                  <div><span className="text-neutral-500">Amount Deposited:</span> <span className="font-bold text-neutral-900">LKR {order.bankDepositDetails.depositedAmount.toLocaleString()}</span></div>
+                                  <div><span className="text-neutral-500">Date & Time:</span> <span className="font-semibold text-neutral-900">{new Date(order.bankDepositDetails.depositedDateTime).toLocaleString()}</span></div>
+                                  {order.bankDepositDetails.slipUrl && (
+                                    <div className="pt-2">
+                                      <a 
+                                        href={order.bankDepositDetails.slipUrl} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center px-3 py-1.5 bg-neutral-900 text-white rounded text-[10px] uppercase font-bold tracking-wider hover:bg-neutral-800 transition-colors"
+                                      >
+                                        View Bank Slip Image
+                                      </a>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="text-xs text-yellow-600 bg-yellow-50 border border-yellow-200 p-4 rounded font-medium">
+                                  Awaiting Slip Details & Image Upload
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </td>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Product, ProductVariant } from "@/data/cloths";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
@@ -44,17 +44,20 @@ export default function ProductActions({ product, onColorChange }: ProductAction
   }, [product.id]);
 
   // Derived arrays
-  const variants = liveProduct.variants && liveProduct.variants.length > 0
-    ? liveProduct.variants
-    : [{
-        SKU_ID: `NYR-${String(liveProduct.id).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10)}-DEFAULT-S`,
-        color: liveProduct.color || "Default",
-        size: "S",
-        stock_quantity: (liveProduct as any).quantity !== undefined ? (liveProduct as any).quantity : 10
-      }];
+  const variants = useMemo(() => {
+    return liveProduct.variants && liveProduct.variants.length > 0
+      ? liveProduct.variants
+      : [{
+          SKU_ID: `NYR-${String(liveProduct.id).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10)}-DEFAULT-S`,
+          color: liveProduct.color || "Default",
+          size: "S",
+          stock_quantity: (liveProduct as any).quantity !== undefined ? (liveProduct as any).quantity : 10
+        }];
+  }, [liveProduct]);
 
-  const colors = Array.from(new Set(variants.map(v => v.color)));
-  const sizes = Array.from(new Set(variants.map(v => v.size)));
+  const colors = useMemo(() => Array.from(new Set(variants.map(v => v.color))), [variants]);
+  const sizes = useMemo(() => Array.from(new Set(variants.map(v => v.size))), [variants]);
+  const hasMultipleSizes = sizes.length > 1;
 
   // Trigger onColorChange callback when selected color updates
   useEffect(() => {
@@ -72,11 +75,39 @@ export default function ProductActions({ product, onColorChange }: ProductAction
     }
   }, [colors, selectedColor]);
 
+  // Auto-select size if there's only one size option
+  useEffect(() => {
+    if (sizes.length === 1) {
+      setSelectedSize(String(sizes[0]));
+    } else if (sizes.length > 1 && !sizes.some(s => String(s) === String(selectedSize))) {
+      setSelectedSize(null);
+    }
+  }, [sizes, selectedSize]);
+
   // Reset states when the product itself changes
   useEffect(() => {
-    if (colors.length > 0) {
-      setSelectedColor(colors[0]);
-      setSelectedSize(null);
+    // Sync live product state when the product prop changes
+    setLiveProduct(product);
+
+    const initialVariants = product.variants && product.variants.length > 0
+      ? product.variants
+      : [{
+          SKU_ID: `NYR-${String(product.id).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10)}-DEFAULT-S`,
+          color: product.color || "Default",
+          size: "S",
+          stock_quantity: (product as any).quantity !== undefined ? (product as any).quantity : 10
+        }];
+
+    const initialColors = Array.from(new Set(initialVariants.map(v => v.color)));
+    const initialSizes = Array.from(new Set(initialVariants.map(v => v.size)));
+
+    if (initialColors.length > 0) {
+      setSelectedColor(initialColors[0]);
+      if (initialSizes.length > 1) {
+        setSelectedSize(null);
+      } else if (initialSizes.length === 1) {
+        setSelectedSize(String(initialSizes[0]));
+      }
     }
   }, [product.id]);
 
@@ -230,44 +261,46 @@ export default function ProductActions({ product, onColorChange }: ProductAction
       )}
 
       {/* Size Selection */}
-      <div className="mb-12">
-        <div className="flex justify-between items-end mb-4">
-          <span className="text-xs uppercase tracking-widest font-bold">Size</span>
-          <button className="text-[10px] uppercase tracking-widest font-bold text-espresso/50 hover:text-espresso underline underline-offset-4">Size Guide</button>
-        </div>
-        <div className="grid grid-cols-5 gap-3">
-          {sizes.map((size) => {
-            const currentVariant = variants.find(
-              v => v.color.toLowerCase() === selectedColor.toLowerCase() && 
-                   String(v.size).toLowerCase() === String(size).toLowerCase()
-            );
-            const stock = currentVariant ? currentVariant.stock_quantity : 0;
-            const isOutOfStock = stock === 0;
-            const isSelected = String(selectedSize) === String(size);
+      {hasMultipleSizes && (
+        <div className="mb-12">
+          <div className="flex justify-between items-end mb-4">
+            <span className="text-xs uppercase tracking-widest font-bold">Size</span>
+            <button className="text-[10px] uppercase tracking-widest font-bold text-espresso/50 hover:text-espresso underline underline-offset-4">Size Guide</button>
+          </div>
+          <div className="grid grid-cols-5 gap-3">
+            {sizes.map((size) => {
+              const currentVariant = variants.find(
+                v => v.color.toLowerCase() === selectedColor.toLowerCase() && 
+                     String(v.size).toLowerCase() === String(size).toLowerCase()
+              );
+              const stock = currentVariant ? currentVariant.stock_quantity : 0;
+              const isOutOfStock = stock === 0;
+              const isSelected = String(selectedSize) === String(size);
 
-            return (
-              <button 
-                key={String(size)} 
-                type="button"
-                onClick={() => setSelectedSize(String(size))}
-                className={`py-3 border transition-all text-sm font-medium relative overflow-hidden ${
-                  isSelected 
-                    ? 'border-espresso bg-espresso text-cream' 
-                    : isOutOfStock
-                      ? 'border-neutral-200 bg-neutral-100 text-neutral-400 cursor-not-allowed opacity-50 bg-[linear-gradient(to_top_right,transparent_46%,#999_49%,#999_51%,transparent_54%)]'
-                      : 'border-espresso/20 hover:border-espresso hover:bg-espresso/5 text-espresso'
-                }`}
-              >
-                {size}
-              </button>
-            );
-          })}
+              return (
+                <button 
+                  key={String(size)} 
+                  type="button"
+                  onClick={() => setSelectedSize(String(size))}
+                  className={`py-3 border transition-all text-sm font-medium relative overflow-hidden ${
+                    isSelected 
+                      ? 'border-espresso bg-espresso text-cream' 
+                      : isOutOfStock
+                        ? 'border-neutral-200 bg-neutral-100 text-neutral-400 cursor-not-allowed opacity-50 bg-[linear-gradient(to_top_right,transparent_46%,#999_49%,#999_51%,transparent_54%)]'
+                        : 'border-espresso/20 hover:border-espresso hover:bg-espresso/5 text-espresso'
+                  }`}
+                >
+                  {size}
+                </button>
+              );
+            })}
+          </div>
+          {/* Error message for missing size on main page */}
+          {error && !isModalOpen && (
+            <p className="text-red-500 text-sm mt-3 animate-pulse">{error}</p>
+          )}
         </div>
-        {/* Error message for missing size on main page */}
-        {error && !isModalOpen && (
-          <p className="text-red-500 text-sm mt-3 animate-pulse">{error}</p>
-        )}
-      </div>
+      )}
 
       {/* Actions */}
       <div className="flex flex-col sm:flex-row gap-4 mb-16">

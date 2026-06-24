@@ -33,40 +33,43 @@ export default function ProductsTable({ products, categories }: { products: Admi
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Product</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Price</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Quantity</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Status</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Colours</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Sizes</th>
               <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-neutral-200">
-            {products.map((product: AdminProduct) => (
-              <tr key={product.id} className={`transition-colors hover:bg-neutral-50 ${isPending ? 'opacity-70' : ''}`}>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <Link href={`/admin/products/${product.id}`} className="h-10 w-10 flex-shrink-0 bg-neutral-100 rounded-md overflow-hidden hover:opacity-80 transition-opacity">
-                      <img className="h-10 w-10 object-cover" src={product.image} alt={product.name} />
-                    </Link>
-                    <div className="ml-4">
-                      <Link href={`/admin/products/${product.id}`} className="text-sm font-medium text-neutral-900 hover:text-olive transition-colors hover:underline">{product.name}</Link>
-                      <div className="text-sm text-neutral-500 capitalize">{product.category} {product.subCategory && `- ${product.subCategory}`}</div>
+            {products.map((product: AdminProduct) => {
+              const productColors = product.variants && product.variants.length > 0
+                ? Array.from(new Set(product.variants.map(v => v.color))).filter(c => c && c.toLowerCase() !== "default").join(", ") || product.color || "Default"
+                : product.color || "Default";
+
+              const productSizes = product.variants && product.variants.length > 0
+                ? Array.from(new Set(product.variants.map(v => v.size))).join(", ")
+                : "S";
+
+              return (
+                <tr key={product.id} className={`transition-colors hover:bg-neutral-50 ${isPending ? 'opacity-70' : ''}`}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <Link href={`/admin/products/${product.id}`} className="h-10 w-10 flex-shrink-0 bg-neutral-100 rounded-md overflow-hidden hover:opacity-80 transition-opacity">
+                        <img className="h-10 w-10 object-cover" src={product.image} alt={product.name} />
+                      </Link>
+                      <div className="ml-4">
+                        <Link href={`/admin/products/${product.id}`} className="text-sm font-medium text-neutral-900 hover:text-olive transition-colors hover:underline">{product.name}</Link>
+                        <div className="text-sm text-neutral-500 capitalize">{product.category} {product.subCategory && `- ${product.subCategory}`}</div>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-neutral-900">LKR {product.price.toFixed(2)}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-neutral-900">{product.quantity}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    product.quantity > 10 ? 'bg-green-100 text-green-800' : 
-                    product.quantity > 0 ? 'bg-yellow-100 text-yellow-800' : 
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {product.quantity > 10 ? 'In Stock' : product.quantity > 0 ? 'Low Stock' : 'Out of Stock'}
-                  </span>
-                </td>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-neutral-900">LKR {product.price.toFixed(2)}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600 capitalize">
+                    {productColors}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">
+                    {productSizes}
+                  </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                   <Link 
                     href={`/admin/products/${product.id}`} 
@@ -87,7 +90,7 @@ export default function ProductsTable({ products, categories }: { products: Admi
                   </button>
                 </td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </table>
       </div>

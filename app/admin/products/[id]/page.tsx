@@ -78,31 +78,13 @@ export default async function ProductDetailPage({ params }: PageProps) {
           </div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded-xl border border-neutral-100 shadow-sm flex items-center gap-3">
-              <div className="p-2.5 bg-neutral-50 rounded-lg text-neutral-700">
-                <DollarSign className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-xs text-neutral-400 block font-medium">Price</span>
-                <span className="text-sm font-bold text-neutral-800">LKR {product.price.toFixed(2)}</span>
-              </div>
+          <div className="bg-white p-4 rounded-xl border border-neutral-100 shadow-sm flex items-center gap-3">
+            <div className="p-2.5 bg-neutral-50 rounded-lg text-neutral-700">
+              <DollarSign className="w-5 h-5" />
             </div>
-            
-            <div className="bg-white p-4 rounded-xl border border-neutral-100 shadow-sm flex items-center gap-3">
-              <div className="p-2.5 bg-neutral-50 rounded-lg text-neutral-700">
-                <Archive className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-xs text-neutral-400 block font-medium">Stock Status</span>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full inline-block mt-0.5 ${
-                  product.quantity > 10 ? 'bg-green-50 text-green-700' :
-                  product.quantity > 0 ? 'bg-yellow-50 text-yellow-700' :
-                  'bg-red-50 text-red-700'
-                }`}>
-                  {product.quantity > 10 ? 'In Stock' : product.quantity > 0 ? 'Low Stock' : 'Out of Stock'}
-                </span>
-              </div>
+            <div>
+              <span className="text-xs text-neutral-400 block font-medium">Price</span>
+              <span className="text-sm font-bold text-neutral-800">LKR {product.price.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -126,12 +108,20 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 <span className="font-semibold text-neutral-800 capitalize">{product.subCategory || "None"}</span>
               </div>
               <div>
-                <span className="text-xs text-neutral-400 block mb-1">Color / Variant Base</span>
-                <span className="font-semibold text-neutral-800">{product.color || "N/A"}</span>
+                <span className="text-xs text-neutral-400 block mb-1">Available Colours</span>
+                <span className="font-semibold text-neutral-800 capitalize">
+                  {product.variants && product.variants.length > 0
+                    ? Array.from(new Set(product.variants.map(v => v.color))).filter(c => c && c.toLowerCase() !== "default").join(", ") || product.color || "Default"
+                    : product.color || "Default"}
+                </span>
               </div>
               <div>
-                <span className="text-xs text-neutral-400 block mb-1">Total Base Stock</span>
-                <span className="font-semibold text-neutral-800">{product.quantity} units</span>
+                <span className="text-xs text-neutral-400 block mb-1">Available Sizes</span>
+                <span className="font-semibold text-neutral-800">
+                  {product.variants && product.variants.length > 0
+                    ? Array.from(new Set(product.variants.map(v => v.size))).join(", ")
+                    : "S"}
+                </span>
               </div>
             </div>
           </div>
@@ -143,35 +133,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
               {product.description || "No description provided for this product."}
             </p>
           </div>
-
-          {/* Variants Card */}
-          {product.variants && product.variants.length > 0 && (
-            <div className="bg-white p-6 rounded-xl border border-neutral-100 shadow-sm space-y-4">
-              <h2 className="text-lg font-semibold text-neutral-900 border-b border-neutral-100 pb-3">Available Variants</h2>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-neutral-100 text-sm">
-                  <thead>
-                    <tr className="text-left text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                      <th className="py-2">SKU ID</th>
-                      <th className="py-2">Size</th>
-                      <th className="py-2">Color</th>
-                      <th className="py-2 text-right">Stock</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-neutral-100">
-                    {product.variants.map((v) => (
-                      <tr key={v.SKU_ID} className="text-neutral-700">
-                        <td className="py-3 font-mono text-xs text-neutral-500">{v.SKU_ID}</td>
-                        <td className="py-3 font-medium">{v.size}</td>
-                        <td className="py-3 capitalize">{v.color || product.color || "Default"}</td>
-                        <td className="py-3 text-right font-medium">{v.stock_quantity}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
 
           {/* Timestamps */}
           <div className="flex flex-wrap gap-4 text-xs text-neutral-400 bg-neutral-50 p-4 rounded-lg">

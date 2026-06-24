@@ -28,6 +28,7 @@ function AddProductModalContent({ onClose, categories }: { onClose: () => void; 
   
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<Array<string | number>>([]);
+  const [hasSizeVariants, setHasSizeVariants] = useState<boolean>(false);
   const [combinationStocks, setCombinationStocks] = useState<Record<string, number>>({});
   const [baseStock, setBaseStock] = useState<number>(10);
   const [baseColor, setBaseColor] = useState<string>("");
@@ -536,74 +537,118 @@ function AddProductModalContent({ onClose, categories }: { onClose: () => void; 
                 </div>
               </div>
 
-              {/* Sizes Section */}
+              {/* Size Variations Toggle */}
               <div className="mt-6 border-t border-neutral-100 pt-6">
-                <div>
-                  <h4 className="text-base font-semibold text-neutral-950 font-serif">Sizes</h4>
-                  <p className="text-xs text-neutral-500">Configure sizing system and select available sizes. Leave empty if there are no size variations.</p>
-                </div>
-                <div className="mt-3 bg-neutral-50 p-4 rounded-lg border border-neutral-200 space-y-4">
-                  <div className="flex gap-6">
-                    <label className="inline-flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        name="sizeSystemTypeRadio"
-                        value="standard"
-                        checked={sizeSystemType === "standard"}
-                        onChange={() => {
-                          setSizeSystemType("standard");
-                          setSelectedSizes([]);
-                        }}
-                        className="focus:ring-neutral-900 h-4 w-4 text-neutral-900 border-neutral-300"
-                      />
-                      <span className="ml-2 text-sm font-medium text-neutral-800">Standard Text (S, M, L)</span>
-                    </label>
-                    <label className="inline-flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        name="sizeSystemTypeRadio"
-                        value="numeric"
-                        checked={sizeSystemType === "numeric"}
-                        onChange={() => {
-                          setSizeSystemType("numeric");
-                          setSelectedSizes([]);
-                        }}
-                        className="focus:ring-neutral-900 h-4 w-4 text-neutral-900 border-neutral-300"
-                      />
-                      <span className="ml-2 text-sm font-medium text-neutral-800">Numeric Size (28, 30, 32)</span>
-                    </label>
-                  </div>
+                <label className="inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={hasSizeVariants}
+                    onChange={(e) => {
+                      const val = e.target.checked;
+                      setHasSizeVariants(val);
+                      if (!val) {
+                        setSelectedSizes([]);
+                      }
+                    }}
+                    className="rounded border-neutral-300 text-neutral-900 focus:ring-neutral-900 h-4 w-4"
+                  />
+                  <span className="ml-2 text-sm font-semibold text-neutral-850">Size</span>
+                </label>
+              </div>
 
-                  {sizeSystemType === "standard" ? (
-                    <div className="space-y-3">
-                      <div className="flex flex-wrap gap-3">
-                        {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((sz) => {
-                          const isAdded = selectedSizes.includes(sz);
-                          return (
-                            <label key={sz} className={`inline-flex items-center px-3 py-1.5 border rounded-md text-xs font-semibold cursor-pointer transition-all ${
-                              isAdded ? 'border-neutral-900 bg-neutral-900 text-white shadow-sm' : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100'
-                            }`}>
-                              <input
-                                type="checkbox"
-                                checked={isAdded}
-                                onChange={() => {
-                                  if (isAdded) {
-                                    setSelectedSizes(selectedSizes.filter(s => s !== sz));
-                                  } else {
-                                    setSelectedSizes([...selectedSizes, sz]);
-                                  }
-                                }}
-                                className="sr-only"
-                              />
-                              {sz}
-                            </label>
-                          );
-                        })}
+              {/* Sizes Section */}
+              {hasSizeVariants && (
+                <div className="mt-6 border-t border-neutral-100 pt-6">
+                  <div>
+                    <h4 className="text-base font-semibold text-neutral-950 font-serif">Sizes</h4>
+                    <p className="text-xs text-neutral-500">Configure sizing system and select available sizes. Leave empty if there are no size variations.</p>
+                  </div>
+                  <div className="mt-3 bg-neutral-50 p-4 rounded-lg border border-neutral-200 space-y-4">
+                    <div className="flex gap-6">
+                      <label className="inline-flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="sizeSystemTypeRadio"
+                          value="standard"
+                          checked={sizeSystemType === "standard"}
+                          onChange={() => {
+                            setSizeSystemType("standard");
+                            setSelectedSizes([]);
+                          }}
+                          className="focus:ring-neutral-900 h-4 w-4 text-neutral-900 border-neutral-300"
+                        />
+                        <span className="ml-2 text-sm font-medium text-neutral-800">Standard Text (S, M, L)</span>
+                      </label>
+                      <label className="inline-flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="sizeSystemTypeRadio"
+                          value="numeric"
+                          checked={sizeSystemType === "numeric"}
+                          onChange={() => {
+                            setSizeSystemType("numeric");
+                            setSelectedSizes([]);
+                          }}
+                          className="focus:ring-neutral-900 h-4 w-4 text-neutral-900 border-neutral-300"
+                        />
+                        <span className="ml-2 text-sm font-medium text-neutral-800">Numeric Size (28, 30, 32)</span>
+                      </label>
+                    </div>
+
+                    {sizeSystemType === "standard" ? (
+                      <div className="space-y-3">
+                        <div className="flex flex-wrap gap-3">
+                          {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((sz) => {
+                            const isAdded = selectedSizes.includes(sz);
+                            return (
+                              <label key={sz} className={`inline-flex items-center px-3 py-1.5 border rounded-md text-xs font-semibold cursor-pointer transition-all ${
+                                isAdded ? 'border-neutral-900 bg-neutral-900 text-white shadow-sm' : 'border-neutral-300 bg-white text-neutral-700 hover:bg-neutral-100'
+                              }`}>
+                                <input
+                                  type="checkbox"
+                                  checked={isAdded}
+                                  onChange={() => {
+                                    if (isAdded) {
+                                      setSelectedSizes(selectedSizes.filter(s => s !== sz));
+                                    } else {
+                                      setSelectedSizes([...selectedSizes, sz]);
+                                    }
+                                  }}
+                                  className="sr-only"
+                                />
+                                {sz}
+                              </label>
+                            );
+                          })}
+                        </div>
+                        <div className="flex gap-2 max-w-xs">
+                          <input
+                            type="text"
+                            placeholder="Add Custom Size (e.g. S/M)"
+                            value={customSizeInput}
+                            onChange={(e) => setCustomSizeInput(e.target.value)}
+                            className="bg-white text-neutral-900 block w-full shadow-sm sm:text-sm rounded-md py-1.5 px-3 border border-neutral-300 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const val = customSizeInput.trim();
+                              if (val && !selectedSizes.includes(val)) {
+                                setSelectedSizes([...selectedSizes, val]);
+                              }
+                              setCustomSizeInput("");
+                            }}
+                            className="px-3 py-1.5 bg-neutral-900 text-white text-xs font-medium rounded-md hover:bg-neutral-800 transition-colors"
+                          >
+                            Add
+                          </button>
+                        </div>
                       </div>
+                    ) : (
                       <div className="flex gap-2 max-w-xs">
                         <input
-                          type="text"
-                          placeholder="Add Custom Size (e.g. S/M)"
+                          type="number"
+                          placeholder="Add Size (e.g. 30)"
                           value={customSizeInput}
                           onChange={(e) => setCustomSizeInput(e.target.value)}
                           className="bg-white text-neutral-900 block w-full shadow-sm sm:text-sm rounded-md py-1.5 px-3 border border-neutral-300 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900"
@@ -611,9 +656,9 @@ function AddProductModalContent({ onClose, categories }: { onClose: () => void; 
                         <button
                           type="button"
                           onClick={() => {
-                            const val = customSizeInput.trim();
-                            if (val && !selectedSizes.includes(val)) {
-                              setSelectedSizes([...selectedSizes, val]);
+                            const val = parseInt(customSizeInput);
+                            if (!isNaN(val) && val > 0 && !selectedSizes.includes(val)) {
+                              setSelectedSizes([...selectedSizes, val].sort((a, b) => Number(a) - Number(b)));
                             }
                             setCustomSizeInput("");
                           }}
@@ -622,50 +667,27 @@ function AddProductModalContent({ onClose, categories }: { onClose: () => void; 
                           Add
                         </button>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2 max-w-xs">
-                      <input
-                        type="number"
-                        placeholder="Add Size (e.g. 30)"
-                        value={customSizeInput}
-                        onChange={(e) => setCustomSizeInput(e.target.value)}
-                        className="bg-white text-neutral-900 block w-full shadow-sm sm:text-sm rounded-md py-1.5 px-3 border border-neutral-300 focus:outline-none focus:ring-1 focus:ring-neutral-900 focus:border-neutral-900"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const val = parseInt(customSizeInput);
-                          if (!isNaN(val) && val > 0 && !selectedSizes.includes(val)) {
-                            setSelectedSizes([...selectedSizes, val].sort((a, b) => Number(a) - Number(b)));
-                          }
-                          setCustomSizeInput("");
-                        }}
-                        className="px-3 py-1.5 bg-neutral-900 text-white text-xs font-medium rounded-md hover:bg-neutral-800 transition-colors"
-                      >
-                        Add
-                      </button>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Selected Sizes List */}
-                  {selectedSizes.length > 0 && (
-                    <div className="pt-2 border-t border-neutral-200">
-                      <span className="text-xs text-neutral-500 font-semibold block mb-2">Selected Sizes:</span>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedSizes.map((sz) => (
-                          <span key={sz} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white border border-neutral-300 shadow-sm">
-                            {sz}
-                            <button type="button" onClick={() => removeSize(sz)} className="text-neutral-400 hover:text-red-500 transition-colors ml-1">
-                              <X className="w-3.5 h-3.5" />
-                            </button>
-                          </span>
-                        ))}
+                    {/* Selected Sizes List */}
+                    {selectedSizes.length > 0 && (
+                      <div className="pt-2 border-t border-neutral-200">
+                        <span className="text-xs text-neutral-500 font-semibold block mb-2">Selected Sizes:</span>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedSizes.map((sz) => (
+                            <span key={sz} className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white border border-neutral-300 shadow-sm">
+                              {sz}
+                              <button type="button" onClick={() => removeSize(sz)} className="text-neutral-400 hover:text-red-500 transition-colors ml-1">
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Inventory & Stock Section */}
               <div className="mt-6 border-t border-neutral-100 pt-6">
